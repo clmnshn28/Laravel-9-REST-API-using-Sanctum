@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 class UsersController extends BaseController
 {
-    public function newUser(Request $request){
+    public function store(Request $request){
 
     }
 }
