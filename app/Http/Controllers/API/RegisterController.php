@@ -50,16 +50,17 @@ class RegisterController extends BaseController
         return $this->sendResponse($success, 'User register successfully.');
     }
    
+    
     /**
-     * Login api
+     * Login for Admin
      *
      * @return \Illuminate\Http\Response
      */
-    public function login(Request $request)
+    public function loginAdmin(Request $request)
     {
 
         $admin = User::where('username', $request->username)->first();
-        $customer = Customer::where('username', $request->username)->first();
+
 
         if($admin && Hash::check($request->password, $admin->password)){
             $success['token'] =  $admin->createToken('Admin')->plainTextToken; 
@@ -68,19 +69,29 @@ class RegisterController extends BaseController
             $success['role'] = 'admin';
 
             return $this->sendResponse($success, 'Admin login successfully.');
-        } 
+        }
+      
+        return $this->sendError('Unauthorized.', ['error'=>'Unauthorized']);  
+    }
+
+    /**
+     *  Login for Customer
+     * 
+     * @return \Illuminate\Http\Response
+     */
+    public function loginCustomer(Request $request)
+    {
+        $customer = Customer::where('username', $request->username)->first();
 
         if($customer && Hash::check($request->password, $customer->password)){
             $success['token'] = $customer->createToken('Customer')->plainTextToken;
             $success['fname'] = $customer->fname;
             $success['lname'] = $customer->lname;
             $success['role'] = 'customer';
-    
+
             return $this->sendResponse($success, 'Customer login successfully.');
         }
-    
-       
-        return $this->sendError('Unauthorised.', ['error'=>'Unauthorised']);
-        
+
+        return $this->sendError('Unauthorized.', ['error'=>'Unauthorized']);
     }
 }
