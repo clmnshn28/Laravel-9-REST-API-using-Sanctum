@@ -36,8 +36,21 @@ return [
     */
 
     'guards' => [
+        'admin' => [
+            'driver' => 'sanctum',
+            'provider' => 'users',
+        ],
+        'customer' =>[
+            'driver' => 'sanctum',
+            'provider' => 'customers',
+        ],
+
         'web' => [
             'driver' => 'session',
+            'provider' => 'users',
+        ],
+        'api' =>[
+            'driver' => 'sanctum',
             'provider' => 'users',
         ],
     ],
@@ -64,7 +77,10 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
         ],
-
+        'customers' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Customer::class,
+        ],
         // 'users' => [
         //     'driver' => 'database',
         //     'table' => 'users',
