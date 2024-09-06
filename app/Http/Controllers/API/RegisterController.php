@@ -5,6 +5,8 @@ namespace App\Http\Controllers\API;
 use Illuminate\Http\Request;
 use App\Http\Controllers\API\BaseController as BaseController;
 use App\Models\User;
+use App\Models\Customer;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Validator;
    
@@ -18,10 +20,18 @@ class RegisterController extends BaseController
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required',
-            'username' => 'required',
-            'password' => 'required',
+            'username' => 'required|unique:customers', 
+            'password' => 'required|min:8',
             'c_password' => 'required|same:password',
+            'fname' => 'required',
+            'lname' => 'required',
+            'contact_number' => 'nullable',
+            'house_number' => 'nullable',
+            'street' => 'nullable',
+            'barangay' => 'nullable',
+            'municipality_city' => 'nullable',
+            'province' => 'nullable',
+            'postal_code' => 'nullable',
         ]);
    
         if($validator->fails()){
@@ -29,32 +39,59 @@ class RegisterController extends BaseController
         }
    
         $input = $request->all();
-        $input['password'] = bcrypt($input['password']);
-        $user = User::create($input);
-        $success['token'] =  $user->createToken('MyApp')->plainTextToken;
-        $success['name'] =  $user->name;
+        unset($input['c_password']);
+        $input['password'] = Hash::make($input['password']);
+
+        $customer = Customer::create($input);
+        $success['token'] =  $customer->createToken('MyApp')->plainTextToken;
+        $success['fname'] = $customer->fname;
+        $success['lname'] = $customer->lname;
    
         return $this->sendResponse($success, 'User register successfully.');
     }
    
+    
     /**
-     * Login api
+     * Login for Admin
      *
      * @return \Illuminate\Http\Response
      */
-    public function login(Request $request)
+    public function loginAdmin(Request $request)
     {
-        
-        if(Auth::attempt(['username' => $request->username, 'password' => $request->password])){ 
-            $user = Auth::user(); 
-            $success['token'] =  $user->createToken('MyApp')->plainTextToken; 
-            $success['name'] =  $user->name;
-            $success['role'] =  "admin";
-   
-            return $this->sendResponse($success, 'User login successfully.');
-        } 
-        else{ 
-            return $this->sendError('Unauthorised.', ['error'=>'Unauthorised']);
-        } 
+
+        $admin = User::where('username', $request->username)->first();
+
+
+        if($admin && Hash::check($request->password, $admin->password)){
+            $success['token'] =  $admin->createToken('Admin')->plainTextToken; 
+            $success['fname'] = $admin->fname;
+            $success['lname'] = $admin->lname;
+            $success['role'] = 'admin';
+
+            return $this->sendResponse($success, 'Admin login successfully.');
+        }
+      
+        return $this->sendError('Unauthorized.', ['error'=>'Unauthorized']);  
+    }
+
+    /**
+     *  Login for Customer
+     * 
+     * @return \Illuminate\Http\Response
+     */
+    public function loginCustomer(Request $request)
+    {
+        $customer = Customer::where('username', $request->username)->first();
+
+        if($customer && Hash::check($request->password, $customer->password)){
+            $success['token'] = $customer->createToken('Customer')->plainTextToken;
+            $success['fname'] = $customer->fname;
+            $success['lname'] = $customer->lname;
+            $success['role'] = 'customer';
+
+            return $this->sendResponse($success, 'Customer login successfully.');
+        }
+
+        return $this->sendError('Unauthorized.', ['error'=>'Unauthorized']);
     }
 }
