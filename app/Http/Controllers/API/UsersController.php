@@ -27,6 +27,7 @@ class UsersController extends BaseController
                 'municipality_city' => 'nullable',
                 'province' => 'nullable',
                 'postal_code' => 'nullable',
+                'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             ]);
 
             if($validator->fails()){
@@ -34,6 +35,15 @@ class UsersController extends BaseController
             }
 
             unset($input['c_password']);
+
+            // Handle image upload
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                $timestamp = date('YmdHis');
+                $imageName =  $timestamp . '.' . $image->getClientOriginalExtension();
+                $image->storeAs('public/images', $imageName);
+                $input['image'] = $imageName;
+            }
 
             $customer = Customer::create([
                 'username' => $input['username'],
@@ -47,6 +57,7 @@ class UsersController extends BaseController
                 'municipality_city' => $input['municipality_city'],
                 'province' => $input['province'],
                 'postal_code' => $input['postal_code'],
+                'image' => $input['image'] ?? null,
             ]);
 
             return $this->sendResponse($customer, 'Customer created successfully.');

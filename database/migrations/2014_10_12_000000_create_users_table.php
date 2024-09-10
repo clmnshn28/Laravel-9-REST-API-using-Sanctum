@@ -26,6 +26,7 @@ return new class extends Migration
             $table->string('municipality_city');
             $table->string('province');
             $table->string('postal_code');
+            $table->string('image')->nullable(); 
             $table->rememberToken();
             $table->timestamps();
         });
