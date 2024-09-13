@@ -15,7 +15,7 @@ class UsersController extends BaseController
             $input = $request->all();
 
             $validator = Validator::make($input, [
-                'username' => 'required|unique:customers',
+                'username' => 'required|unique:customers,username',
                 'password' => 'required|min:8',
                 'c_password' => 'required|same:password', 
                 'fname' => 'required',
@@ -51,9 +51,9 @@ class UsersController extends BaseController
                 'fname' => $input['fname'],
                 'lname' => $input['lname'],
                 'contact_number' => $input['contact_number'],
-                'house_number' => $input['house_number'],
-                'street' => $input['street'],
-                'barangay' => $input['barangay'],
+                'house_number' => $input['house_number'] ?? '',
+                'street' => $input['street'] ?? '',
+                'barangay' => $input['barangay'] ?? '',
                 'municipality_city' => $input['municipality_city'],
                 'province' => $input['province'],
                 'postal_code' => $input['postal_code'],
