@@ -20,6 +20,7 @@ class UsersController extends BaseController
                 'c_password' => 'required|same:password', 
                 'fname' => 'required',
                 'lname' => 'required',
+                'email' => 'required|unique:customers,email',
                 'contact_number' => 'nullable',
                 'house_number' => 'nullable',
                 'street' => 'nullable',
@@ -50,6 +51,7 @@ class UsersController extends BaseController
                 'password' => Hash::make($input['password']),
                 'fname' => $input['fname'],
                 'lname' => $input['lname'],
+                'email' => $input['email'],
                 'contact_number' => $input['contact_number'],
                 'house_number' => $input['house_number'] ?? '',
                 'street' => $input['street'] ?? '',
@@ -74,6 +76,7 @@ class UsersController extends BaseController
             'password' => 'nullable|min:8',
             'fname' => 'required',
             'lname' => 'required',
+            'email' => 'required|unique:customers,email',
             'contact_number' => 'required',
             'house_number' => 'required',
             'street' => 'required',
@@ -93,6 +96,7 @@ class UsersController extends BaseController
         }
         $customer->fname = $input['fname'];
         $customer->lname = $input['lname'];
+        $customer->email = $input['email'];
         $customer->contact_number = $input['contact_number'];
         $customer->house_number = $input['house_number'];
         $customer->street = $input['street'];
