@@ -17,17 +17,18 @@ class UsersSeeder extends Seeder
     public function run()
     {
         $user = User::create([
-            'username' => 'clmnshn',
+            'username' => 'admin',
             'password' => Hash::make('password'),
-            'fname'=> 'celmin',
-            'lname'=> 'quizon',
+            'fname'=> 'Celmin Shane',
+            'lname'=> 'Quizon',
+            'email'=>'celminshanequizon@gmail.com',
             'contact_number'=>'09671212123',
             'house_number' => '366',
-            'street' => 'Gitna St.',
+            'street' => 'Gitna',
             'barangay' => 'Tinejero',
-            'municipality_city' => 'Pulilan',
+            'municipality_city' => 'Malolos',
             'province' => 'Bulacan',
-            'postal_code' => '3005',
+            'postal_code' => '3000',
         ]);
     }
 }

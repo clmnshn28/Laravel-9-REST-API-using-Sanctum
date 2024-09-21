@@ -17,17 +17,18 @@ class CustomersSeeder extends Seeder
     public function run()
     {
         $customer = Customer::create([
-            'username' => 'beckett',
+            'username' => 'havis',
             'password' => Hash::make('password'),
-            'fname'=> 'beckett',
-            'lname'=> 'quizon',
-            'contact_number'=>'09671212123',
-            'house_number' => '466',
-            'street' => 'Maharlika St.',
-            'barangay' => 'Inaon',
-            'municipality_city' => 'Pulilan',
+            'fname'=> 'Francis Harvey',
+            'lname'=> 'Soriano',
+            'email'=>'francissoriano43@gmail.com',
+            'contact_number'=>'09352338425',
+            'house_number' => '914',
+            'street' => 'hilerang kawayan',
+            'barangay' => 'Lawa',
+            'municipality_city' => 'Malolos',
             'province' => 'Bulacan',
-            'postal_code' => '3005',
+            'postal_code' => '3000',
         ]);
         
     }

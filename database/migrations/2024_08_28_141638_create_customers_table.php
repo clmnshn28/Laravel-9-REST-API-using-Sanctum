@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('fname');
             $table->string('lname');
+            $table->string('email')->unique(); 
             $table->string('contact_number', 11);
             $table->string('house_number');
             $table->string('street');
