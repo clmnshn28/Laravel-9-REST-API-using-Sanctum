@@ -63,10 +63,15 @@ class RegisterController extends BaseController
 
 
         if($admin && Hash::check($request->password, $admin->password)){
-            $success['token'] =  $admin->createToken('Admin')->plainTextToken; 
+            
+            $token = $admin->createToken('Customer')->plainTextToken;
+            $admin->remember_token = $token;
+            $success['token'] = $token;
             $success['fname'] = $admin->fname;
             $success['lname'] = $admin->lname;
             $success['role'] = 'admin';
+            $admin->is_online = 1; 
+            $admin->save(); 
 
             return $this->sendResponse($success, 'Admin login successfully.');
         }
@@ -84,14 +89,43 @@ class RegisterController extends BaseController
         $customer = Customer::where('username', $request->username)->first();
 
         if($customer && Hash::check($request->password, $customer->password)){
-            $success['token'] = $customer->createToken('Customer')->plainTextToken;
+
+            $token = $customer->createToken('Customer')->plainTextToken;
+            $customer->remember_token = $token;
+            $success['token'] = $token;
             $success['fname'] = $customer->fname;
             $success['lname'] = $customer->lname;
             $success['role'] = 'customer';
+            $customer->is_online = 1; 
+            $customer->save(); 
 
             return $this->sendResponse($success, 'Customer login successfully.');
         }
 
         return $this->sendError('Unauthorized.', ['error'=>'Unauthorized']);
     }
+
+
+    /**
+     * Logout for Admin and Customer
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function logout(Request $request)
+    {
+        $user = Auth::user(); // Get the currently authenticated user
+
+        if ($user) {
+
+            $user->remember_token = null;
+            $user->is_online = 0;
+            $user->save();
+
+            return $this->sendResponse([], 'User logged out successfully.');
+        }
+
+        return $this->sendError('Unauthorized.', ['error' => 'Unauthorized']);
+    }
+
+
 }

@@ -24,7 +24,7 @@ class CustomersSeeder extends Seeder
             'email'=>'francissoriano43@gmail.com',
             'contact_number'=>'09352338425',
             'house_number' => '914',
-            'street' => 'hilerang kawayan',
+            'street' => 'Hilerang Kawayan',
             'barangay' => 'Lawa',
             'municipality_city' => 'Malolos',
             'province' => 'Bulacan',
