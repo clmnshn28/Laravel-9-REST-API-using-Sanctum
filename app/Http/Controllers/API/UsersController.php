@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Customer;
 use Illuminate\Support\Facades\Hash;
 use Validator;
+use App\Rules\UniqueForUser;
 
 class UsersController extends BaseController
 {
@@ -128,27 +129,19 @@ class UsersController extends BaseController
     // check if email || username exists
     public function validateUser(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'username' => 'required|string',
-            'currentEmail' => 'required|email',
-            'currentUsername' => 'required|string',
-        ]);
-    
-        // Check if the email exists for other users (excluding the current user)
-        $emailExists = Customer::where('email', $request->email)
-            ->where('email', '!=', $request->currentEmail) // Exclude current user's email
-            ->exists();
-            
-        // Check if the username exists for other users (excluding the current user)
-        $usernameExists = Customer::where('username', $request->username)
-            ->where('username', '!=', $request->currentUsername) // Exclude current user's username
-            ->exists();
-    
+        $currentEmail = $request->input('currentEmail');
+        $currentUsername = $request->input('currentUsername');
 
+        // Use custom validation rules
+        $request->validate([
+            'email' => ['required', 'email', new UniqueForUser('email', $currentEmail)],
+            'username' => ['required', new UniqueForUser('username', $currentUsername)],
+        ]);
+
+         // If validation passes, return success response
         return response()->json([
-            'emailExists' => $emailExists,
-            'usernameExists' => $usernameExists,
+            'emailExists' => false, 
+            'usernameExists' => false,
         ]);
     }
 
