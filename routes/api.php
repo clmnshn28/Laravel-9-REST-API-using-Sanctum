@@ -25,12 +25,16 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+
 Route::controller(RegisterController::class)->group(function(){
     Route::post('register', 'register');
     Route::post('login/admin', 'loginAdmin'); 
     Route::post('login/customer', 'loginCustomer');
 });
 
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('logout', [RegisterController::class, 'logout']);
+});
 
 // Admin routes
 Route::middleware('auth.admin')->group(function () {
@@ -46,5 +50,16 @@ Route::middleware('auth.customer')->group(function () {
 
 Route::controller(UsersController::class)->group(function(){
     Route::post('customers', 'store');
+    Route::get('customers', 'index');
+    Route::get('customers/soft-deleted', 'trashed');
+    
+    Route::get('customers/{customer}', 'show');
     Route::put('customers/{customer}', 'update');
+
+    Route::post('customer/validate', 'validateUser');
+    Route::put('customers/{customer}/reset-password', 'resetPassword');
+    Route::put('customers/{customer}/deactivate', 'deactivate');
+    Route::post('customers/{customer}/reactivate', 'reactivate');
 });
+
+

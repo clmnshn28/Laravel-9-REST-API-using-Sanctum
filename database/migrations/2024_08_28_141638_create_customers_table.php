@@ -27,10 +27,12 @@ return new class extends Migration
             $table->string('municipality_city');
             $table->string('province');
             $table->string('postal_code');
-            $table->string('image')->nullable();; 
+            $table->string('image')->nullable();
+            $table->json('deactivation_info')->nullable();
+            $table->boolean('is_online')->default(false); 
             $table->rememberToken();
             $table->timestamps();
-
+            $table->softDeletes();
         });
     }
 
