@@ -9,7 +9,7 @@ use App\Http\Controllers\API\AdminController;
 use App\Http\Controllers\API\CustomerController;
 use App\Http\Controllers\API\OrderController;
 use App\Http\Controllers\API\ProductController;
-
+use App\Http\Controllers\API\ProfileController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -34,6 +34,13 @@ Route::controller(RegisterController::class)->group(function(){
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [RegisterController::class, 'logout']);
+
+    Route::prefix('user')->group(function () {
+        Route::get('display', [ProfileController::class, 'show']);
+        Route::put('update', [ProfileController::class, 'update']);
+        Route::post('update-image', [ProfileController::class, 'updateImage']);
+        Route::post('change-password', [ProfileController::class, 'changePassword']);
+    });
 });
 
 // Admin routes
