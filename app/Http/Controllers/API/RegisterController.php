@@ -19,12 +19,15 @@ class RegisterController extends BaseController
      */
     public function register(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'username' => 'required|unique:customers', 
+        $input = $request->all();
+
+        $validator = Validator::make($input, [
+            'username' => 'required|unique:customers,username',
             'password' => 'required|min:8',
             'c_password' => 'required|same:password',
             'fname' => 'required',
             'lname' => 'required',
+            'email' => 'required|unique:customers,email',
             'contact_number' => 'nullable',
             'house_number' => 'nullable',
             'street' => 'nullable',
@@ -32,22 +35,33 @@ class RegisterController extends BaseController
             'municipality_city' => 'nullable',
             'province' => 'nullable',
             'postal_code' => 'nullable',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
    
         if($validator->fails()){
             return $this->sendError('Validation Error.', $validator->errors());       
         }
    
-        $input = $request->all();
-        unset($input['c_password']);
-        $input['password'] = Hash::make($input['password']);
 
-        $customer = Customer::create($input);
-        $success['token'] =  $customer->createToken('MyApp')->plainTextToken;
-        $success['fname'] = $customer->fname;
-        $success['lname'] = $customer->lname;
+        unset($input['c_password']);
+      
+        $customer = Customer::create([
+            'username' => $input['username'],
+            'password' => Hash::make($input['password']),
+            'fname' => $input['fname'],
+            'lname' => $input['lname'],
+            'email' => $input['email'],
+            'contact_number' => $input['contact_number'] ?? '',
+            'house_number' => $input['house_number'] ?? '',
+            'street' => $input['street'] ?? '',
+            'barangay' => $input['barangay'] ?? '',
+            'municipality_city' => $input['municipality_city'] ?? '',
+            'province' => $input['province'] ?? '',
+            'postal_code' => $input['postal_code'] ?? '',
+            'image' => $input['image'] ?? null,
+        ]);
    
-        return $this->sendResponse($success, 'User register successfully.');
+        return $this->sendResponse([], 'Customer register successfully.');
     }
    
     
