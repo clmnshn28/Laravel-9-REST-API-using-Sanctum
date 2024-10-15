@@ -19,8 +19,9 @@ class ProductController extends BaseController
     {
         $products = Product::all();
     
-        return $this->sendResponse(ProductResource::collection($products), 'Products retrieved successfully.');
+        return $this->sendResponse($products, 'Products retrieved successfully.');
     }
+
     /**
      * Store a newly created resource in storage.
      *
@@ -42,7 +43,7 @@ class ProductController extends BaseController
    
         $product = Product::create($input);
    
-        return $this->sendResponse(new ProductResource($product), 'Product created successfully.');
+        return $this->sendResponse($product, 'Product created successfully.');
     } 
    
     /**
@@ -59,7 +60,7 @@ class ProductController extends BaseController
             return $this->sendError('Product not found.');
         }
    
-        return $this->sendResponse(new ProductResource($product), 'Product retrieved successfully.');
+        return $this->sendResponse($product, 'Product retrieved successfully.');
     }
     
     /**
@@ -74,19 +75,25 @@ class ProductController extends BaseController
         $input = $request->all();
    
         $validator = Validator::make($input, [
-            'name' => 'required',
-            'detail' => 'required'
+            'item_name' => 'required',
+            'initial_stock' => 'required|integer',
+            'price' => 'required|integer',
+            'available_stock' => 'required|integer', // Add validation for available_stock if needed
+            'status' => 'required|string', 
         ]);
    
         if($validator->fails()){
             return $this->sendError('Validation Error.', $validator->errors());       
         }
    
-        $product->name = $input['name'];
-        $product->detail = $input['detail'];
+        $product->item_name = $input['item_name'];
+        $product->initial_stock = $input['initial_stock'];
+        $product->price = $input['price'];
+        $product->available_stock = $input['available_stock']; 
+        $product->status = $input['status'];
         $product->save();
    
-        return $this->sendResponse(new ProductResource($product), 'Product updated successfully.');
+        return $this->sendResponse($product, 'Product updated successfully.');
     }
    
     /**

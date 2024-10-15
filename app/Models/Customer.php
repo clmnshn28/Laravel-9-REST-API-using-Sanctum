@@ -34,4 +34,24 @@ class Customer extends Authenticatable
         'remember_token',
     ];
 
+    public function feedbacks () {
+        return $this->hasMany(Feedback::class, 'customer_id', 'id');
+    }
+
+    public function borrowed_gallons(){
+        return $this->hasMany(Borrow::class, 'customer_id', 'id');
+    }
+
+    public function gallons(){
+        return $this->hasManyThrough( BorrowDetails::class, Borrow::class, 'customer_id', 'borrowed_gallon_id')->with('borrow'); 
+    }
+
+    // public function inactive_gallons(){
+    //     return $this->hasMany(Borrow::class, 'customer_id', 'id')->where('status', '=', 'Completed')->with('borrow_details');
+    // }
+
+    public function inactive_gallons(){
+        return $this->hasMany(Borrow::class, 'customer_id', 'id')->where('status', '=', 'completed')->with('borrow_details');
+    }
+
 }
