@@ -71,7 +71,7 @@ class UsersController extends BaseController
     public function index()
     {
         $customer = Customer::all();
-        return $this->sendResponse($customer, 'Customers retrieved successfully.');
+        return $this->sendResponse($customer->load(['inactive_gallons']), 'Customers retrieved successfully.');
     }
     
     // show specific

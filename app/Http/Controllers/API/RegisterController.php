@@ -78,14 +78,17 @@ class RegisterController extends BaseController
 
         if($admin && Hash::check($request->password, $admin->password)){
             
-            $token = $admin->createToken('Customer')->plainTextToken;
+            $token = $admin->createToken('Admin')->plainTextToken;
             $admin->remember_token = $token;
             $success['token'] = $token;
+            $success['id'] = $admin->id;
             $success['fname'] = $admin->fname;
             $success['lname'] = $admin->lname;
             $success['role'] = 'admin';
             $admin->is_online = 1; 
-            $admin->save(); 
+            $admin->save();
+            
+            Auth::login($admin);
 
             return $this->sendResponse($success, 'Admin login successfully.');
         }
@@ -107,12 +110,14 @@ class RegisterController extends BaseController
             $token = $customer->createToken('Customer')->plainTextToken;
             $customer->remember_token = $token;
             $success['token'] = $token;
+            $success['id'] = $customer->id;
             $success['fname'] = $customer->fname;
             $success['lname'] = $customer->lname;
             $success['role'] = 'customer';
             $customer->is_online = 1; 
             $customer->save(); 
 
+     
             return $this->sendResponse($success, 'Customer login successfully.');
         }
 
