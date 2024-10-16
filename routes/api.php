@@ -14,6 +14,7 @@ use App\Http\Controllers\API\RefillController;
 use App\Http\Controllers\API\BorrowController;
 use App\Http\Controllers\API\ReturnController;
 use App\Http\Controllers\API\GallonDeliveryController;
+use App\Http\Controllers\API\AnnouncementController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -67,12 +68,17 @@ Route::middleware('auth.admin')->group(function () {
     });
     Route::get('admin/products', [ProductController::class, 'index']);
     Route::put('admin/products/{product}', [ProductController::class, 'update']);
+
     Route::get('/gallon-delivery', [GallonDeliveryController::class, 'index']);
     Route::get('/gallon-delivery/{delivery_status}', [GallonDeliveryController::class, 'showRequests']);
-
     Route::put('/gallon-delivery/{id}/decline', [GallonDeliveryController::class, 'declineRequest']);
     Route::put('/gallon-delivery/{id}/queueing', [GallonDeliveryController::class, 'acceptRequest']);
     Route::put('/gallon-delivery/{id}/completed', [GallonDeliveryController::class, 'completedRequest']);
+
+    Route::get('/admin/announcement', [AnnouncementController::class, 'getAllAnnouncementsForAdmin']);
+    Route::put('/admin/announcement', [AnnouncementController::class, 'store']);
+    Route::put('/admin/announcement/{id}', [AnnouncementController::class, 'update']);
+    Route::delete('/admin/announcement/{id}', [AnnouncementController::class, 'destroy']);
 });
 
 // Customer routes
@@ -94,4 +100,7 @@ Route::middleware('auth.customer')->group(function () {
         Route::post('/returned', 'store'); 
     });
     Route::get('/user/address/check', [CustomerController::class, 'checkUserAddress']);
+    Route::get('/customer/transactions', [CustomerController::class, 'showRequestsTransaction']);
+    Route::get('/customer/announcement', [AnnouncementController::class, 'getAnnouncementsWithReadStatus']);
+    Route::post('/customer/announcement/{announcement}/read', [AnnouncementController::class, 'markAsRead']);
 });

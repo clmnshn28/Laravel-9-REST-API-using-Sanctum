@@ -36,10 +36,10 @@ class GallonDelivery extends Model
         'customers.*', 
         DB::raw('(
             SELECT CONCAT(
-                "1: ", 
-                COALESCE(SUM(CASE WHEN shop_gallon_id = 1 THEN quantity ELSE 0 END), 0), 
-                ", 2: ", 
-                COALESCE(SUM(CASE WHEN shop_gallon_id = 2 THEN quantity ELSE 0 END), 0)
+               "1: ", 
+            COALESCE(GROUP_CONCAT(CASE WHEN shop_gallon_id = 1 THEN quantity END), "None"), 
+            ", 2: ", 
+            COALESCE(GROUP_CONCAT(CASE WHEN shop_gallon_id = 2 THEN quantity END), "None")
             ) 
             FROM refill_details 
             WHERE refill_details.refill_gallon_id = refill.id
@@ -67,10 +67,10 @@ class GallonDelivery extends Model
         'customers.*', 
         DB::raw('(
             SELECT CONCAT(
-                "1: ", 
-                COALESCE(SUM(CASE WHEN shop_gallon_id = 1 THEN quantity ELSE 0 END), 0), 
-                ", 2: ", 
-                COALESCE(SUM(CASE WHEN shop_gallon_id = 2 THEN quantity ELSE 0 END), 0)
+               "1: ", 
+            COALESCE(GROUP_CONCAT(CASE WHEN shop_gallon_id = 1 THEN quantity END), "None"), 
+            ", 2: ", 
+            COALESCE(GROUP_CONCAT(CASE WHEN shop_gallon_id = 2 THEN quantity END), "None")
             ) 
             FROM borrow_details 
             WHERE borrow_details.borrowed_gallon_id = borrow.id
@@ -99,10 +99,10 @@ class GallonDelivery extends Model
         'customers.*', 
         DB::raw('(
             SELECT CONCAT(
-                "1: ", 
-                COALESCE(SUM(CASE WHEN shop_gallon_id = 1 THEN quantity ELSE 0 END), 0), 
-                ", 2: ", 
-                COALESCE(SUM(CASE WHEN shop_gallon_id = 2 THEN quantity ELSE 0 END), 0)
+               "1: ", 
+            COALESCE(GROUP_CONCAT(CASE WHEN shop_gallon_id = 1 THEN quantity END), "None"), 
+            ", 2: ", 
+            COALESCE(GROUP_CONCAT(CASE WHEN shop_gallon_id = 2 THEN quantity END), "None")
             ) 
             FROM returned_details 
             WHERE returned_details.returned_gallon_id = returned.id

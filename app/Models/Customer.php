@@ -46,12 +46,12 @@ class Customer extends Authenticatable
         return $this->hasManyThrough( BorrowDetails::class, Borrow::class, 'customer_id', 'borrowed_gallon_id')->with('borrow'); 
     }
 
-    // public function inactive_gallons(){
-    //     return $this->hasMany(Borrow::class, 'customer_id', 'id')->where('status', '=', 'Completed')->with('borrow_details');
-    // }
-
     public function inactive_gallons(){
         return $this->hasMany(Borrow::class, 'customer_id', 'id')->where('status', '=', 'completed')->with('borrow_details');
+    }
+
+    public function readStatuses(){
+        return $this->hasMany(AnnouncementReadStatus::class);
     }
 
 }

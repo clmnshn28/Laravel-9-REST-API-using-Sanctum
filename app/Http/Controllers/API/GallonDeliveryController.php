@@ -182,7 +182,8 @@ class GallonDeliveryController extends BaseController
             'gallon_status' => 'required|string', 
             'refill_id' => 'nullable', 
             'borrow_id' => 'nullable', 
-            'returned_id' => 'nullable', 
+            'returned_id' => 'nullable',
+            'customer_id' => 'required', 
             'data' => 'required|array',
             'data.*.gallon_id' => 'required',
             'data.*.quantity' => 'required|lte:data.*.available_stock',
@@ -242,7 +243,7 @@ class GallonDeliveryController extends BaseController
 
 
             $borrow = Borrow::where([
-                'customer_id' => $request->returned_id,
+                'customer_id' => $request->customer_id,
                 'admin_id' => 1,
             ])->first();
 
