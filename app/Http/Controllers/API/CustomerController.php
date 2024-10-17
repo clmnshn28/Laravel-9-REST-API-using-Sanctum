@@ -4,6 +4,8 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\API\BaseController as BaseController;
 use Illuminate\Http\Request;
+use App\Models\GallonDelivery;
+use App\Models\User;
 use Validator;
 use Illuminate\Support\Facades\Auth;
 use App\Rules\UniqueForUser;
@@ -48,6 +50,26 @@ class CustomerController extends BaseController
 
         return $this->sendResponse(['hasAddress' => true], 'Address check completed successfully.');
     }
+
+
+    public function showRequestsTransaction(){
+        
+        $customer_id = Auth::guard('customer')->user()->id;
+
+        $refill_gallon_delivery = GallonDelivery::refill_gallon_delivery()->toArray();
+        $borrow_gallon_delivery = GallonDelivery::borrow_gallon_delivery()->toArray();
+        $return_gallon_delivery = GallonDelivery::return_gallon_delivery()->toArray();
+
+        $result = array_merge($refill_gallon_delivery,  $borrow_gallon_delivery, $return_gallon_delivery);
+        $collection = collect($result);
+        $sorted = $collection->filter(function ($value) use ($customer_id) {
+            return strtolower($value->customer_id) == $customer_id;
+        })->sortBy('updated_at')->values()->toArray();
+
+        return $this->sendResponse( $sorted, ' All Queue created successfully.');
+    }
+
+    
 
 
 }
