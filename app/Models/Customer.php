@@ -54,4 +54,8 @@ class Customer extends Authenticatable
         return $this->hasMany(AnnouncementReadStatus::class);
     }
 
+    public function concerns(){
+        return $this->hasMany(Concern::class, 'customer_id')->with(['replies', 'admin']);
+    }
+
 }

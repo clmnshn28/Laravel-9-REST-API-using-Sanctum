@@ -15,6 +15,7 @@ use App\Http\Controllers\API\BorrowController;
 use App\Http\Controllers\API\ReturnController;
 use App\Http\Controllers\API\GallonDeliveryController;
 use App\Http\Controllers\API\AnnouncementController;
+use App\Http\Controllers\API\ConcernController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -47,6 +48,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('change-password', [ProfileController::class, 'changePassword']);
     });
     Route::post('validate', [CustomerController::class, 'validateUser']);
+    Route::get('/concern/{id}/replies', [ConcernController::class, 'getRepliesForConcern']);
 });
  
 // Admin routes
@@ -79,6 +81,10 @@ Route::middleware('auth.admin')->group(function () {
     Route::put('/admin/announcement', [AnnouncementController::class, 'store']);
     Route::put('/admin/announcement/{id}', [AnnouncementController::class, 'update']);
     Route::delete('/admin/announcement/{id}', [AnnouncementController::class, 'destroy']);
+
+    Route::get('/admin/concern', [ConcernController::class, 'getAllConcerns']);
+    Route::put('/admin/concern/{id}/read', [ConcernController::class, 'markConcernAsRead']);
+    Route::post('/concern/{id}/reply', [ConcernController::class, 'storeReply']);
 });
 
 // Customer routes
@@ -103,4 +109,7 @@ Route::middleware('auth.customer')->group(function () {
     Route::get('/customer/transactions', [CustomerController::class, 'showRequestsTransaction']);
     Route::get('/customer/announcement', [AnnouncementController::class, 'getAnnouncementsWithReadStatus']);
     Route::post('/customer/announcement/{announcement}/read', [AnnouncementController::class, 'markAsRead']);
+
+    Route::get('/customer/concern', [ConcernController::class, 'getCustomerConcerns']);
+    Route::post('/customer/concern', [ConcernController::class, 'store']);
 });
