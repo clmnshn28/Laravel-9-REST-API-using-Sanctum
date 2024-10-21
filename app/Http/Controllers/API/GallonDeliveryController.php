@@ -9,6 +9,7 @@ use App\Models\Refill;
 use App\Models\Borrow;
 use App\Models\Returned;
 use App\Models\Product;
+use App\Models\Notification; 
 use Illuminate\Support\Facades\Auth;
 use Validator;
 
@@ -63,6 +64,9 @@ class GallonDeliveryController extends BaseController
             return $this->sendError('Delivery request not found.');
         }
 
+        $gallonDescriptionString = ''; 
+        $customerId = null;
+
         switch ($request->gallon_type) {
             case 'refill':
                 $gallonRefill = Refill::find($request->refill_id);
@@ -71,6 +75,8 @@ class GallonDeliveryController extends BaseController
                 }
                 $gallonRefill->status = 'cancelled';
                 $gallonRefill->save();
+                $customerId = $gallonRefill->customer_id;
+                $gallonDescriptionString = 'refill request';
                 break;
 
             case 'borrow':
@@ -80,6 +86,8 @@ class GallonDeliveryController extends BaseController
                 }
                 $gallonBorrow->status = 'cancelled';
                 $gallonBorrow->save();
+                $customerId = $gallonBorrow->customer_id;
+                $gallonDescriptionString = 'borrow request';
                 break;
 
             case 'return':
@@ -89,12 +97,23 @@ class GallonDeliveryController extends BaseController
                 }
                 $gallonReturn->status = 'cancelled';
                 $gallonReturn->save();
+                $customerId = $gallonReturn->customer_id;
+                $gallonDescriptionString = 'return request';
                 break;
         }
 
         $gallonDelivery->status = 'cancelled'; 
         $gallonDelivery->reason = $request->reason; 
         $gallonDelivery->save(); 
+
+        Notification::create([
+            'customer_id' => $customerId,
+            'admin_id' => Auth::guard('admin')->user()->id, 
+            'type' => ucfirst($request->gallon_type),
+            'subject' => ucfirst($request->gallon_type) . ' Request Declined', 
+            'description' => 'Your ' . $gallonDescriptionString . ' has been declined. Reason: ' . $request->reason,
+            'is_admin' => false, 
+        ]);
 
         return $this->sendResponse($gallonDelivery, 'Delivery request declined successfully.');
     }
@@ -123,6 +142,7 @@ class GallonDeliveryController extends BaseController
             return $this->sendError('Delivery request not found.');
         }
 
+        $customerId = null; 
 
         if( $request->gallon_type  === 'refill'){
             $gallonRefill = Refill::find( $request->refill_id);
@@ -132,7 +152,7 @@ class GallonDeliveryController extends BaseController
             $gallonDelivery->status = 'pickup'; 
             $gallonRefill->status = 'pickup' ;
             $gallonRefill->save();
-
+            $customerId = $gallonRefill->customer_id;
 
         }else if($request->gallon_type  === 'borrow'){
             $gallonBorrow = Borrow::find( $request->borrow_id);
@@ -142,6 +162,7 @@ class GallonDeliveryController extends BaseController
             $gallonDelivery->status = 'deliver';
             $gallonBorrow->status = 'deliver' ;
             $gallonBorrow->save();
+            $customerId = $gallonBorrow->customer_id;
 
             foreach( $request->data as $borrow_request_data ){
                 $product = Product::find($borrow_request_data['gallon_id']);
@@ -163,9 +184,19 @@ class GallonDeliveryController extends BaseController
             $gallonDelivery->status = 'pickup'; 
             $gallonReturn->status = 'pickup' ;
             $gallonReturn->save();
+            $customerId = $gallonReturn->customer_id; 
         }
 
         $gallonDelivery->save(); 
+
+        Notification::create([
+            'customer_id' => $customerId, // Use the retrieved customer ID
+            'admin_id' => 1, // Assuming the admin ID is fixed for this example
+            'type' => ucfirst($request->gallon_type),
+            'subject' => ucfirst($request->gallon_type) . ' Request Accepted',
+            'description' => 'Your ' . ucfirst($request->gallon_type) . ' request has been accepted.',
+            'is_admin' => false,
+        ]);
 
         return $this->sendResponse($gallonDelivery, 'Delivery request accepted successfully.');
     }

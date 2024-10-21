@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Concern;
 use App\Models\Customer;
 use App\Models\Reply;
+use App\Models\Notification; 
 use Illuminate\Support\Facades\Auth;
 use Validator;
 
@@ -76,6 +77,17 @@ class ConcernController extends BaseController
             'images' => $input['images'] ?? null, 
         ]);
 
+        Notification::create([
+            'customer_id' => Auth::guard('customer')->user()->id,
+            'admin_id' => 1, 
+            'type' => 'Concern',
+            'subject' => 'Concern Submitted',
+            'description' =>  Auth::guard('customer')->user()->fname .' '. Auth::guard('customer')->user()->lname . 
+                             ' has submitted a concern: "' . $input['subject'] . 
+                             '" of type "' . $input['concern_type'] . '".',
+            'is_admin' => true,
+        ]);
+
         return $this->sendResponse($concern, 'Concern created successfully.');
     }
 
@@ -113,6 +125,15 @@ class ConcernController extends BaseController
             'concern_id' => $id,
         ]);
             
+        Notification::create([
+            'customer_id' => $concern->customer_id,
+            'admin_id' => Auth::guard('admin')->user()->id, 
+            'type' => 'Concern Reply',
+            'subject' => 'Your Concern has a new reply',
+            'description' => 'Your concern titled "' . $concern->subject . '" has received a new reply.',
+            'is_admin' => false,
+        ]);
+    
 
         return $this->sendResponse($reply, 'Response concern successfully.');
     }

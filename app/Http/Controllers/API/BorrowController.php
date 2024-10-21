@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Borrow;
 use App\Models\BorrowDetails;
 use App\Models\GallonDelivery;
+use App\Models\Notification; 
 use Illuminate\Support\Facades\Auth;
 use Validator;
 
@@ -44,7 +45,16 @@ class BorrowController extends BaseController
             'status' => 'pending',
         ]);
 
+        $gallonDescription = [];
         foreach( $input['data'] as $borrow_request_data ){
+
+            $gallonType = ($borrow_request_data['gallon_id'] == 1) ? 'Slim' : 
+                        (($borrow_request_data['gallon_id'] == 2) ? 'Round' : 'Unknown');
+
+            // Prepare the description
+            $gallonDescription[] = "{$borrow_request_data['quantity']} {$gallonType} Gallon" .  
+                                ($borrow_request_data['quantity'] > 1 ? 's' : '');
+
             $borrow->borrow_details()->create([
                 'shop_gallon_id' => $borrow_request_data['gallon_id'],
                 'borrowed_gallon_id' => $borrow->id,
@@ -60,6 +70,18 @@ class BorrowController extends BaseController
             //     $product->update(['status' => 'Out of Stock']);
             // }
         }
+
+        $gallonDescriptionString = implode(', ', $gallonDescription);
+
+        $customer = Auth::guard('customer')->user();
+        Notification::create([
+            'customer_id' => $customer->id, 
+            'admin_id' => 1,
+            'type' => 'Borrow', 
+            'subject' => 'Borrow Request', 
+            'description' => $customer->fname .' '. $customer->lname .' has requested to borrow ' . $gallonDescriptionString,
+            'is_admin' => true, 
+        ]);
 
         return $this->sendResponse($borrow->load(['borrow_details']), 'Borrow request created successfully.');
     }

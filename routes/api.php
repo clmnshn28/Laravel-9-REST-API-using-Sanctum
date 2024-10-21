@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\API\RegisterController;
 use App\Http\Controllers\API\UsersController;
-use App\Http\Controllers\API\AdminController;
+use App\Http\Controllers\API\DashboardController;
 use App\Http\Controllers\API\CustomerController;
 use App\Http\Controllers\API\OrderController;
 use App\Http\Controllers\API\ProductController;
@@ -16,6 +16,7 @@ use App\Http\Controllers\API\ReturnController;
 use App\Http\Controllers\API\GallonDeliveryController;
 use App\Http\Controllers\API\AnnouncementController;
 use App\Http\Controllers\API\ConcernController;
+use App\Http\Controllers\API\NotificationController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -53,7 +54,7 @@ Route::middleware('auth:sanctum')->group(function () {
  
 // Admin routes
 Route::middleware('auth.admin')->group(function () {
-    Route::get('/admin/dashboard', [AdminController::class, 'dashboard']);
+    Route::get('/admin/dashboard-data', [DashboardController::class, 'getDashboardData']);
   
     Route::controller(UsersController::class)->group(function(){
         Route::post('customers', 'store');
@@ -85,11 +86,14 @@ Route::middleware('auth.admin')->group(function () {
     Route::get('/admin/concern', [ConcernController::class, 'getAllConcerns']);
     Route::put('/admin/concern/{id}/read', [ConcernController::class, 'markConcernAsRead']);
     Route::post('/concern/{id}/reply', [ConcernController::class, 'storeReply']);
+
+    Route::get('/admin/notifications', [NotificationController::class, 'indexForAdmin']);
+    Route::post('/admin/notifications/read', [NotificationController::class, 'markAsReadAdmin']);
 });
 
 // Customer routes
 Route::middleware('auth.customer')->group(function () {
-    Route::get('/customer/dashboard', [CustomerController::class, 'dashboard']);
+    Route::get('/customer/dashboard-data', [DashboardController::class, 'getCustomerDashboardData']);
     Route::resource('customer/orders', OrderController::class);
     Route::get('/products', [ProductController::class, 'index']);
     Route::controller(RefillController::class)->group(function() {
@@ -112,4 +116,7 @@ Route::middleware('auth.customer')->group(function () {
 
     Route::get('/customer/concern', [ConcernController::class, 'getCustomerConcerns']);
     Route::post('/customer/concern', [ConcernController::class, 'store']);
+
+    Route::get('/customer/notifications', [NotificationController::class, 'indexForCustomer']);
+    Route::put('/customer/notifications/{type}/read', [NotificationController::class, 'markAsReadCustomer']);
 });
