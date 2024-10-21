@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Announcement;
 use App\Models\AnnouncementReadStatus;
 use App\Models\Customer;
+use App\Models\Notification; 
 use Illuminate\Support\Facades\Auth;
 use Validator;
 
@@ -52,6 +53,15 @@ class AnnouncementController extends BaseController
                 'admin_id' =>  Auth::guard('admin')->user()->id,
                 'customer_id' => $customer->id,
                 'is_read' => false, 
+            ]);
+
+            Notification::create([
+                'customer_id' => $customer->id,
+                'admin_id' => Auth::guard('admin')->user()->id, 
+                'type' => 'Announcement',
+                'subject' => 'New Announcement: ' . $announcement->title,
+                'description' => 'A new announcement has been posted. Please check it out: ' . $announcement->title,
+                'is_admin' => false, 
             ]);
         }
 

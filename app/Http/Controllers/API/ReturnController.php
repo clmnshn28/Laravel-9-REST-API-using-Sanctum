@@ -9,6 +9,7 @@ use App\Models\Borrow;
 use App\Models\Returned;
 use App\Models\ReturnedDetails;
 use App\Models\GallonDelivery;
+use App\Models\Notification; 
 use Illuminate\Support\Facades\Auth;
 use Validator;
 
@@ -50,7 +51,16 @@ class ReturnController extends BaseController
             'status' => 'pending',
         ]);
 
+        $gallonDescription = [];
         foreach( $input['data'] as $returned_request_data ){
+
+            $gallonType = ($returned_request_data['gallon_id'] == 1) ? 'Slim' : 
+                        (($returned_request_data['gallon_id'] == 2) ? 'Round' : 'Unknown');
+
+            // Prepare the description
+            $gallonDescription[] = "{$returned_request_data['quantity']} {$gallonType} Gallon" .  
+                                ($returned_request_data['quantity'] > 1 ? 's' : '');
+
             $returned->returned_details()->create([
                 'shop_gallon_id' => $returned_request_data['gallon_id'],
                 'returned_gallon_id' => $returned->id,
@@ -73,6 +83,18 @@ class ReturnController extends BaseController
             // ]);
 
         }
+
+        $gallonDescriptionString = implode(', ', $gallonDescription);
+
+        $customer = Auth::guard('customer')->user();
+        Notification::create([
+            'customer_id' =>$customer->id, 
+            'admin_id' => 1,
+            'type' => 'Return', 
+            'subject' => 'Return Request', 
+            'description' =>$customer->fname .' '.$customer->lname .' has requested to return ' . $gallonDescriptionString,
+            'is_admin' => true, 
+        ]);
 
         return $this->sendResponse($returned->load(['returned_details']), 'Return request created successfully.');
     }
