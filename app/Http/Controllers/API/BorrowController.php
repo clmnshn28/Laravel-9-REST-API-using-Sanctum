@@ -9,6 +9,7 @@ use App\Models\Borrow;
 use App\Models\BorrowDetails;
 use App\Models\GallonDelivery;
 use App\Models\Notification; 
+use App\Models\BorrowLimit;
 use Illuminate\Support\Facades\Auth;
 use Validator;
 
@@ -99,4 +100,36 @@ class BorrowController extends BaseController
         return $this->sendResponse($borrowedGallons, 'Borrowed gallons retrieved successfully.');
     }
 
+
+
+
+    public function getBorrowLimits() {
+        $borrowLimits = BorrowLimit::all();
+        return $this->sendResponse($borrowLimits, 'Borrow limits retrieved successfully.');
+    }
+
+
+    public function updateBorrowLimits(Request $request){
+        
+        $input = $request->all();
+
+        $validator = Validator::make($input, [
+            'slimGallons' => 'required|numeric|min:0',
+            'roundGallons' => 'required|numeric|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error', $validator->errors());
+        }
+
+        $borrowLimits = BorrowLimit::updateOrCreate(
+            [],
+            [
+                'slim_gallons' => $input['slimGallons'],
+                'round_gallons' => $input['roundGallons'],
+            ]
+        );
+
+        return $this->sendResponse($borrowLimits, 'Borrow limits updated successfully.');
+    }
 }

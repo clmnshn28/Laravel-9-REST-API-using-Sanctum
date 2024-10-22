@@ -17,6 +17,7 @@ use App\Http\Controllers\API\GallonDeliveryController;
 use App\Http\Controllers\API\AnnouncementController;
 use App\Http\Controllers\API\ConcernController;
 use App\Http\Controllers\API\NotificationController;
+use App\Http\Controllers\API\BusinessHourController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -89,6 +90,12 @@ Route::middleware('auth.admin')->group(function () {
 
     Route::get('/admin/notifications', [NotificationController::class, 'indexForAdmin']);
     Route::post('/admin/notifications/read', [NotificationController::class, 'markAsReadAdmin']);
+
+    Route::get('/admin/business-hours', [BusinessHourController::class, 'index']);
+    Route::post('/admin/business-hours', [BusinessHourController::class, 'update']);
+
+    Route::get('/admin/borrow-limits', [BorrowController::class, 'getBorrowLimits']);
+    Route::post('/admin/borrow-limits', [BorrowController::class, 'updateBorrowLimits']);
 });
 
 // Customer routes
@@ -119,4 +126,6 @@ Route::middleware('auth.customer')->group(function () {
 
     Route::get('/customer/notifications', [NotificationController::class, 'indexForCustomer']);
     Route::put('/customer/notifications/{type}/read', [NotificationController::class, 'markAsReadCustomer']);
+
+    Route::get('/customer/borrow-limits', [BorrowController::class, 'getBorrowLimits']);
 });
