@@ -30,7 +30,7 @@ class ProfileController extends BaseController
             'fname' => 'required',
             'lname' => 'required',
             'email' => 'required|email|unique:users,email,'.$user->id,
-            'contact_number' => 'required',
+            'contact_number' => 'nullable',
             'house_number' => 'nullable',
             'street' => 'nullable',
             'barangay' => 'nullable',
@@ -47,7 +47,7 @@ class ProfileController extends BaseController
         $user->fname = $request->fname;
         $user->lname = $request->lname;
         $user->email = $request->email;
-        $user->contact_number = $request->contact_number;
+        $user->contact_number = $request->contact_number ?? '';
         $user->house_number = $request->house_number ?? $user->house_number;
         $user->street = $request->street ?? $user->street;
         $user->barangay = $request->barangay ?? $user->barangay;
