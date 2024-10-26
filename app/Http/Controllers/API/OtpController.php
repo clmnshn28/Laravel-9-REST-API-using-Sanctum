@@ -70,7 +70,7 @@ class OtpController extends BaseController
             return $this->sendError('Invalid OTP.');
         }
 
-        if ($otp->created_at->diffInSeconds(now()) > 60) {
+        if ($otp->created_at->diffInSeconds(now()) > 180) {
             $otp->delete(); 
             return $this->sendError('OTP has expired.');
         }

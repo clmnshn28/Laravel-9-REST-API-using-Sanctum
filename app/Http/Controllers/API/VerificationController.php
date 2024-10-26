@@ -6,7 +6,6 @@ use App\Http\Controllers\API\BaseController as BaseController;
 use Illuminate\Http\Request;
 use App\Models\Customer;
 use Illuminate\Auth\Events\Verified;
-use Illuminate\Support\Facades\Redirect;
 
 class VerificationController extends BaseController
 {
@@ -21,7 +20,8 @@ class VerificationController extends BaseController
 
         // Check if the email is already verified
         if ($customer->hasVerifiedEmail()) {
-            return Redirect::to('http://localhost:3000/customer/sign-in')->with('status', 'Email verified successfully. You can now log in.');
+            $url = env('APP_URL') . '/customer/sign-in';
+            return redirect($url)->with('status', 'Email verified successfully. You can now log in.');
         }
 
         // Mark the email as verified and trigger the Verified event
