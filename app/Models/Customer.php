@@ -28,6 +28,7 @@ class Customer extends Authenticatable implements MustVerifyEmail
         'province',
         'postal_code',
         'image',
+        'email_verified_at'
     ];
 
     protected $hidden = [
