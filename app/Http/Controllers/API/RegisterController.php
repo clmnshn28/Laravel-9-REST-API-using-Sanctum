@@ -9,7 +9,9 @@ use App\Models\Customer;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Validator;
-   
+use Illuminate\Validation\Rule;
+use Illuminate\Auth\Events\Registered;
+
 class RegisterController extends BaseController
 {
     /**
@@ -27,7 +29,12 @@ class RegisterController extends BaseController
             'c_password' => 'required|same:password',
             'fname' => 'required',
             'lname' => 'required',
-            'email' => 'required|unique:customers,email',
+            'email' => [
+                'required',
+                'email',
+                Rule::unique('customers', 'email'),
+                Rule::unique('users', 'email'),
+            ],
             'contact_number' => 'nullable',
             'house_number' => 'nullable',
             'street' => 'nullable',
@@ -55,15 +62,18 @@ class RegisterController extends BaseController
             'house_number' => $input['house_number'] ?? '',
             'street' => $input['street'] ?? '',
             'barangay' => $input['barangay'] ?? '',
-            'municipality_city' => $input['municipality_city'] ?? '',
-            'province' => $input['province'] ?? '',
-            'postal_code' => $input['postal_code'] ?? '',
+            'municipality_city' => $input['municipality_city'] ?? 'Malolos',
+            'province' => $input['province'] ?? 'Bulacan',                   
+            'postal_code' => $input['postal_code'] ?? '3000', 
             'image' => $input['image'] ?? null,
         ]);
-   
+
+        event(new Registered($customer));
+ 
         return $this->sendResponse([], 'Customer register successfully.');
     }
    
+    
     
     /**
      * Login for Admin
@@ -93,7 +103,7 @@ class RegisterController extends BaseController
             return $this->sendResponse($success, 'Admin login successfully.');
         }
       
-        return $this->sendError('Unauthorized.', ['error'=>'Unauthorized']);  
+        return $this->sendError('Invalid username or password', ['error'=>'Unauthorized']);  
     }
 
     /**
@@ -106,6 +116,10 @@ class RegisterController extends BaseController
         $customer = Customer::where('username', $request->username)->first();
 
         if($customer && Hash::check($request->password, $customer->password)){
+
+            if (is_null($customer->email_verified_at)) {
+                return $this->sendError('Email not verified.');
+            }
 
             $token = $customer->createToken('Customer')->plainTextToken;
             $customer->remember_token = $token;
@@ -121,7 +135,7 @@ class RegisterController extends BaseController
             return $this->sendResponse($success, 'Customer login successfully.');
         }
 
-        return $this->sendError('Unauthorized.', ['error'=>'Unauthorized']);
+        return $this->sendError('Invalid username or password.', ['error'=>'Unauthorized']);
     }
 
 

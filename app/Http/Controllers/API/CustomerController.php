@@ -39,6 +39,7 @@ class CustomerController extends BaseController
         $customer = Auth::guard('customer')->user();
         
         $missingFields = array_filter([
+            'contact_number' => empty($customer->contact_number),
             'house_number' => empty($customer->house_number),
             'street' => empty($customer->street),
             'barangay' => empty($customer->barangay),
@@ -66,7 +67,7 @@ class CustomerController extends BaseController
             return strtolower($value->customer_id) == $customer_id;
         })->sortBy('updated_at')->values()->toArray();
 
-        return $this->sendResponse( $sorted, ' All Queue created successfully.');
+        return $this->sendResponse( $sorted, ' All Transactions created successfully.');
     }
 
     

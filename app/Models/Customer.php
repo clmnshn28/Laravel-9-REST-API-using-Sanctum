@@ -8,8 +8,9 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 
-class Customer extends Authenticatable
+class Customer extends Authenticatable implements MustVerifyEmail 
 {
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 

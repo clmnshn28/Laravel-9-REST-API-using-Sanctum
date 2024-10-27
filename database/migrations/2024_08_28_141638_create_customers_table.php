@@ -30,6 +30,7 @@ return new class extends Migration
             $table->string('image')->nullable();
             $table->json('deactivation_info')->nullable();
             $table->boolean('is_online')->default(false); 
+            $table->timestamp('email_verified_at')->nullable(); 
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();

@@ -18,6 +18,7 @@ use App\Http\Controllers\API\AnnouncementController;
 use App\Http\Controllers\API\ConcernController;
 use App\Http\Controllers\API\NotificationController;
 use App\Http\Controllers\API\BusinessHourController;
+use App\Http\Controllers\API\OtpController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -38,6 +39,11 @@ Route::controller(RegisterController::class)->group(function(){
     Route::post('register', 'register');
     Route::post('login/admin', 'loginAdmin'); 
     Route::post('login/customer', 'loginCustomer');
+    Route::post('/forgot-password/send-otp', [OtpController::class, 'sendOtp']);
+    Route::post('/forgot-password/verify-otp', [OtpController::class, 'verifyOtp']);
+    Route::post('forgot-password/delete-otp', [OtpController::class, 'deleteOtp']);
+    Route::post('forgot-password/reset-password', [OtpController::class, 'resetPassword']);
+
 });
 
 Route::middleware('auth:sanctum')->group(function () {
