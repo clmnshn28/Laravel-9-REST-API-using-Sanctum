@@ -12,7 +12,7 @@ class VerificationController extends BaseController
     public function verify(Request $request, $id, $hash)
     {
         $customer = Customer::findOrFail($id);
-
+        $url = env('APP_URL') . '/customer/sign-in';
             
         if (!hash_equals((string) $hash, (string) sha1($customer->email))) {
             return $this->sendError('Invalid verification link.');
@@ -20,7 +20,6 @@ class VerificationController extends BaseController
 
         // Check if the email is already verified
         if ($customer->hasVerifiedEmail()) {
-            $url = env('APP_URL') . '/customer/sign-in';
             return redirect($url)->with('status', 'Email verified successfully. You can now log in.');
         }
 
@@ -28,7 +27,7 @@ class VerificationController extends BaseController
         $customer->markEmailAsVerified();
         event(new Verified($customer));
 
-        return $this->sendResponse([], 'Email verified successfully.');
+        return redirect($url)->with('status', 'Email verified successfully. You can now log in.');
     }
 
     

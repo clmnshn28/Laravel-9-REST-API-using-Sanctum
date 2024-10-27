@@ -8,6 +8,7 @@ use App\Models\Customer;
 use Illuminate\Support\Facades\Hash;
 use Validator;
 use App\Rules\UniqueForUser;
+use Carbon\Carbon; 
 
 class UsersController extends BaseController
 {
@@ -61,6 +62,7 @@ class UsersController extends BaseController
                 'province' => $input['province'],
                 'postal_code' => $input['postal_code'],
                 'image' => $input['image'] ?? null,
+                'email_verified_at' => Carbon::now(),
             ]);
 
             return $this->sendResponse($customer, 'Customer created successfully.');
