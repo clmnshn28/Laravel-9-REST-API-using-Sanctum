@@ -217,7 +217,7 @@ class GallonDeliveryController extends BaseController
             'customer_id' => 'required', 
             'data' => 'required|array',
             'data.*.gallon_id' => 'required',
-            'data.*.quantity' => 'required|lte:data.*.available_stock',
+            'data.*.quantity' => 'required',
         ]);
 
         if ($validator->fails()) {
