@@ -89,6 +89,8 @@ Route::middleware('auth.admin')->group(function () {
     Route::put('/admin/announcement', [AnnouncementController::class, 'store']);
     Route::put('/admin/announcement/{id}', [AnnouncementController::class, 'update']);
     Route::delete('/admin/announcement/{id}', [AnnouncementController::class, 'destroy']);
+    Route::get('admin/announcement/archived', [AnnouncementController::class, 'getArchivedAnnouncements']);
+    Route::put('admin/announcement/restore/{id}', [AnnouncementController::class, 'restore']);
 
     Route::get('/admin/concern', [ConcernController::class, 'getAllConcerns']);
     Route::put('/admin/concern/{id}/read', [ConcernController::class, 'markConcernAsRead']);
