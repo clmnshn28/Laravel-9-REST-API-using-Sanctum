@@ -107,6 +107,25 @@ class AnnouncementController extends BaseController
     }
 
 
+    public function getArchivedAnnouncements()
+    {
+        $archivedAnnouncements = Announcement::onlyTrashed()->get();
+        return $this->sendResponse($archivedAnnouncements, 'Archived announcements retrieved successfully.');
+    }
+
+
+    public function restore($id)
+    {
+        $announcement = Announcement::onlyTrashed()->find($id);
+        if (!$announcement) {
+            return $this->sendError('Archived announcement not found.');
+        }
+        $announcement->restore(); 
+
+        return $this->sendResponse($announcement, 'Announcement restored successfully.');
+    }
+
+
 
     public function markAsRead(Request $request, $announcementId)
     {
