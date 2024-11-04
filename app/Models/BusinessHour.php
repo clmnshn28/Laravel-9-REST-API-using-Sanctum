@@ -5,18 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Product extends Model
+class BusinessHour extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
+
     protected $fillable = [
-        'item_name', 
-        'initial_stock', 
-        'price'
+        'day',
+        'is_open',
     ];
+
+    public function timeSlots(){
+        return $this->hasMany(TimeSlot::class);
+    }
 }

@@ -5,9 +5,9 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;
+use App\Models\Customer;
 
-class UsersSeeder extends Seeder
+class CustomersSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -16,19 +16,20 @@ class UsersSeeder extends Seeder
      */
     public function run()
     {
-        $user = User::create([
-            'username' => 'admin',
+        $customer = Customer::create([
+            'username' => 'havis',
             'password' => Hash::make('password'),
-            'fname'=> 'Celmin Shane',
-            'lname'=> 'Quizon',
-            'email'=>'celminshanequizon@gmail.com',
-            'contact_number'=>'09671212123',
-            'house_number' => '366',
-            'street' => 'Gitna',
-            'barangay' => 'Tinejero',
+            'fname'=> 'Francis Harvey',
+            'lname'=> 'Soriano',
+            'email'=>'francissoriano43@gmail.com',
+            'contact_number'=>'09352338425',
+            'house_number' => '914',
+            'street' => 'Hilerang Kawayan',
+            'barangay' => 'Lawa',
             'municipality_city' => 'Malolos',
             'province' => 'Bulacan',
             'postal_code' => '3000',
         ]);
+        
     }
 }

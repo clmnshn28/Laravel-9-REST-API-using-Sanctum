@@ -13,14 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('products', function (Blueprint $table) {
+        Schema::create('announcement_read_status', function (Blueprint $table) {
             $table->id();
-            $table->string('item_name');
-            $table->integer('initial_stock');
-            $table->integer('price');
-            $table->integer('borrowed');
-            $table->integer('available_stock');
-            $table->string('status');
+            $table->integer('announcement_id');
+            $table->integer('admin_id');
+            $table->integer('customer_id');
+            $table->boolean('is_read')->default(false);
             $table->timestamps();
         });
     }
@@ -32,6 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('products');
+        Schema::dropIfExists('announcement_read_status');
     }
 };

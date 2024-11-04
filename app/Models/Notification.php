@@ -5,18 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Product extends Model
+class Notification extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
+
     protected $fillable = [
-        'item_name', 
-        'initial_stock', 
-        'price'
+        'customer_id',
+        'admin_id',
+        'type',
+        'subject',
+        'description',
+        'is_admin',
     ];
 }

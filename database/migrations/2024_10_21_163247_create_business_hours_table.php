@@ -13,14 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('products', function (Blueprint $table) {
+        Schema::create('business_hours', function (Blueprint $table) {
             $table->id();
-            $table->string('item_name');
-            $table->integer('initial_stock');
-            $table->integer('price');
-            $table->integer('borrowed');
-            $table->integer('available_stock');
-            $table->string('status');
+            $table->string('day');
+            $table->boolean('is_open')->default(false);
             $table->timestamps();
         });
     }
@@ -32,6 +28,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('products');
+        Schema::dropIfExists('business_hours');
     }
 };
