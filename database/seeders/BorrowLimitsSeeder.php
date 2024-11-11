@@ -16,8 +16,8 @@ class BorrowLimitsSeeder extends Seeder
     public function run()
     {
         BorrowLimit::create([
-            'slim_gallons' => 0,  
-            'round_gallons' => 0,
+            'slim_gallons' => 5,  
+            'round_gallons' => 5,
         ]);
 
     }

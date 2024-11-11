@@ -17,7 +17,7 @@ class ProductSeeder extends Seeder
         $product = Product::create([
             'item_name' => 'Blue Slim Gallon with Faucet Refill (20L/5gal)',
             'initial_stock' => 0,
-            'price'=> 0,
+            'price'=> 25,
             'borrowed'=> 0,
             'available_stock'=> 0,
             'status' => 'Out of Stock',
@@ -26,7 +26,7 @@ class ProductSeeder extends Seeder
         $product = Product::create([
             'item_name' => 'Round Gallon Dispenser Refill 18.9L',
             'initial_stock' => 0,
-            'price'=> 0,
+            'price'=> 25,
             'borrowed'=> 0,
             'available_stock'=> 0,
             'status' => 'Out of Stock',
