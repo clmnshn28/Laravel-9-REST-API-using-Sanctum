@@ -29,6 +29,7 @@ class CustomersSeeder extends Seeder
             'municipality_city' => 'Malolos',
             'province' => 'Bulacan',
             'postal_code' => '3000',
+            'email_verified_at' => now(),
         ]);
         
     }
