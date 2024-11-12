@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             ProductSeeder::class,
             BusinessHoursSeeder::class,
             TimeSlotSeeder::class,
+            BorrowLimitsSeeder::class,
         ]);
     }
 }
