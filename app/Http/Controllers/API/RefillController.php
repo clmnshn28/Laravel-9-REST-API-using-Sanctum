@@ -9,6 +9,7 @@ use App\Models\RefillDetails;
 use App\Models\GallonDelivery;
 use App\Models\Notification; 
 use Illuminate\Support\Facades\Auth;
+use App\Events\NotificationAdminEvent;
 use Validator;
 
 class RefillController extends BaseController
@@ -64,7 +65,7 @@ class RefillController extends BaseController
 
         $customer = Auth::guard('customer')->user();
 
-        Notification::create([
+        $notification = Notification::create([
             'customer_id' => $customer->id, 
             'admin_id' => 1,
             'type' => 'Refill', 
@@ -72,6 +73,8 @@ class RefillController extends BaseController
             'description' => $customer->fname .' '. $customer->lname .' has requested to refill ' . $gallonDescriptionString,
             'is_admin' => true, 
         ]);
+
+        event(new NotificationAdminEvent($notification));
 
 
         return $this->sendResponse($refill->load(['refill_details']), 'Refill request created successfully.');

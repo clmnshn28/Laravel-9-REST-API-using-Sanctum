@@ -9,6 +9,8 @@ use App\Models\Customer;
 use App\Models\Reply;
 use App\Models\Notification; 
 use Illuminate\Support\Facades\Auth;
+use App\Events\NotificationEvent;
+use App\Events\NotificationAdminEvent;
 use Validator;
 
 class ConcernController extends BaseController
@@ -77,7 +79,7 @@ class ConcernController extends BaseController
             'images' => $input['images'] ?? null, 
         ]);
 
-        Notification::create([
+        $notification = Notification::create([
             'customer_id' => Auth::guard('customer')->user()->id,
             'admin_id' => 1, 
             'type' => 'Concern',
@@ -87,6 +89,8 @@ class ConcernController extends BaseController
                              '" of type "' . $input['concern_type'] . '".',
             'is_admin' => true,
         ]);
+
+        event(new NotificationAdminEvent($notification));
 
         return $this->sendResponse($concern, 'Concern created successfully.');
     }
@@ -125,7 +129,7 @@ class ConcernController extends BaseController
             'concern_id' => $id,
         ]);
             
-        Notification::create([
+        $notification = Notification::create([
             'customer_id' => $concern->customer_id,
             'admin_id' => Auth::guard('admin')->user()->id, 
             'type' => 'Concern Reply',
@@ -133,6 +137,8 @@ class ConcernController extends BaseController
             'description' => 'Your concern titled "' . $concern->subject . '" has received a new reply.',
             'is_admin' => false,
         ]);
+
+        event(new NotificationEvent($notification));
     
 
         return $this->sendResponse($reply, 'Response concern successfully.');
