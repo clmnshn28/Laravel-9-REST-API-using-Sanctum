@@ -61,7 +61,8 @@ class NotificationController extends BaseController
                 $description = 'There ' . ($concernCount == 1 ? 'is' : 'are') . ' ' . $concernCount . ' new customer concern' . ($concernCount == 1 ? '' : 's') . ' that may require attention.';
                 
             } else {
-                $description = 'There are ' . $group->count() . ' new ' . strtolower($firstNotification->type) . ' requests';
+                $requestCount = $group->count();
+                $description = 'There ' . ($requestCount == 1 ? 'is' : 'are') . ' ' . $requestCount . ' new ' . strtolower($firstNotification->type) . ($requestCount == 1 ? ' request' : ' requests');
             }
 
             $batchNotifications[] = [

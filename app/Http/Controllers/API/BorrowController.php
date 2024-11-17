@@ -11,6 +11,7 @@ use App\Models\GallonDelivery;
 use App\Models\Notification; 
 use App\Models\BorrowLimit;
 use Illuminate\Support\Facades\Auth;
+use App\Events\NotificationAdminEvent;
 use Validator;
 
 class BorrowController extends BaseController
@@ -75,7 +76,7 @@ class BorrowController extends BaseController
         $gallonDescriptionString = implode(', ', $gallonDescription);
 
         $customer = Auth::guard('customer')->user();
-        Notification::create([
+        $notification = Notification::create([
             'customer_id' => $customer->id, 
             'admin_id' => 1,
             'type' => 'Borrow', 
@@ -83,6 +84,8 @@ class BorrowController extends BaseController
             'description' => $customer->fname .' '. $customer->lname .' has requested to borrow ' . $gallonDescriptionString,
             'is_admin' => true, 
         ]);
+
+        event(new NotificationAdminEvent($notification));
 
         return $this->sendResponse($borrow->load(['borrow_details']), 'Borrow request created successfully.');
     }

@@ -11,6 +11,7 @@ use App\Models\Returned;
 use App\Models\Product;
 use App\Models\Notification; 
 use Illuminate\Support\Facades\Auth;
+use App\Events\NotificationEvent;
 use Validator;
 
 class GallonDeliveryController extends BaseController
@@ -106,7 +107,7 @@ class GallonDeliveryController extends BaseController
         $gallonDelivery->reason = $request->reason; 
         $gallonDelivery->save(); 
 
-        Notification::create([
+        $notification = Notification::create([
             'customer_id' => $customerId,
             'admin_id' => Auth::guard('admin')->user()->id, 
             'type' => ucfirst($request->gallon_type),
@@ -114,6 +115,8 @@ class GallonDeliveryController extends BaseController
             'description' => 'Your ' . $gallonDescriptionString . ' has been declined. Reason: ' . $request->reason,
             'is_admin' => false, 
         ]);
+
+        event(new NotificationEvent($notification));
 
         return $this->sendResponse($gallonDelivery, 'Delivery request declined successfully.');
     }
@@ -189,7 +192,7 @@ class GallonDeliveryController extends BaseController
 
         $gallonDelivery->save(); 
 
-        Notification::create([
+        $notification = Notification::create([
             'customer_id' => $customerId, // Use the retrieved customer ID
             'admin_id' => 1, // Assuming the admin ID is fixed for this example
             'type' => ucfirst($request->gallon_type),
@@ -197,6 +200,8 @@ class GallonDeliveryController extends BaseController
             'description' => 'Your ' . ucfirst($request->gallon_type) . ' request has been accepted.',
             'is_admin' => false,
         ]);
+        
+        event(new NotificationEvent($notification));
 
         return $this->sendResponse($gallonDelivery, 'Delivery request accepted successfully.');
     }

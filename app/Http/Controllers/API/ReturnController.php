@@ -11,6 +11,7 @@ use App\Models\ReturnedDetails;
 use App\Models\GallonDelivery;
 use App\Models\Notification; 
 use Illuminate\Support\Facades\Auth;
+use App\Events\NotificationAdminEvent;
 use Validator;
 
 class ReturnController extends BaseController
@@ -87,7 +88,7 @@ class ReturnController extends BaseController
         $gallonDescriptionString = implode(', ', $gallonDescription);
 
         $customer = Auth::guard('customer')->user();
-        Notification::create([
+        $notification = Notification::create([
             'customer_id' =>$customer->id, 
             'admin_id' => 1,
             'type' => 'Return', 
@@ -95,6 +96,9 @@ class ReturnController extends BaseController
             'description' =>$customer->fname .' '.$customer->lname .' has requested to return ' . $gallonDescriptionString,
             'is_admin' => true, 
         ]);
+
+        event(new NotificationAdminEvent($notification));
+
 
         return $this->sendResponse($returned->load(['returned_details']), 'Return request created successfully.');
     }

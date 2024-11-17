@@ -9,6 +9,7 @@ use App\Models\AnnouncementReadStatus;
 use App\Models\Customer;
 use App\Models\Notification; 
 use Illuminate\Support\Facades\Auth;
+use App\Events\NotificationEvent;
 use Validator;
 
 class AnnouncementController extends BaseController
@@ -55,7 +56,7 @@ class AnnouncementController extends BaseController
                 'is_read' => false, 
             ]);
 
-            Notification::create([
+            $notification = Notification::create([
                 'customer_id' => $customer->id,
                 'admin_id' => Auth::guard('admin')->user()->id, 
                 'type' => 'Announcement',
@@ -63,7 +64,10 @@ class AnnouncementController extends BaseController
                 'description' => 'A new announcement has been posted. Please check it out: ' . $announcement->title,
                 'is_admin' => false, 
             ]);
+
         }
+
+        event(new NotificationEvent($notification));
 
         return $this->sendResponse($announcement, 'Announcement created successfully.');
     }
