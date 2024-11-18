@@ -19,7 +19,7 @@ return new class extends Migration
             $table->integer('customer_id');
             $table->string('subject');
             $table->string('concern_type');
-            $table->string('content');
+            $table->text('content');
             $table->json('images')->nullable();
             $table->boolean('is_read')->default(false);
             $table->timestamps();
