@@ -18,7 +18,7 @@ return new class extends Migration
             $table->integer('concern_id');
             $table->integer('customer_id');
             $table->integer('admin_id');
-            $table->string('content');
+            $table->text('content');
             $table->timestamps();
         });
     }
