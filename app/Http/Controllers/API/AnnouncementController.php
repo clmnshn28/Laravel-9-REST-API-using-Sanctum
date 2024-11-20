@@ -25,8 +25,24 @@ class AnnouncementController extends BaseController
 
     public function getAnnouncementsWithReadStatus()
     {
-        $announcement = Announcement::all();
-        return $this->sendResponse($announcement->load(['readStatus']), "Announcements Customer retrieved successfully.");
+        $announcements = Announcement::all();
+        $customers = Customer::all();
+
+        foreach ($announcements as $announcement) {
+            foreach ($customers as $customer) {
+                AnnouncementReadStatus::firstOrCreate(
+                    [
+                        'announcement_id' => $announcement->id,
+                        'customer_id' => $customer->id,
+                    ],
+                    [
+                        'admin_id' => 1, 
+                        'is_read' => false,
+                    ]
+                );
+            }
+        }
+        return $this->sendResponse($announcements->load(['readStatus']), "Announcements Customer retrieved successfully.");
     }
 
 
