@@ -84,6 +84,8 @@ Route::middleware('auth.admin')->group(function () {
     Route::put('/gallon-delivery/{id}/decline', [GallonDeliveryController::class, 'declineRequest']);
     Route::put('/gallon-delivery/{id}/queueing', [GallonDeliveryController::class, 'acceptRequest']);
     Route::put('/gallon-delivery/{id}/completed', [GallonDeliveryController::class, 'completedRequest']);
+    Route::post('/admin/gallon-request', [GallonDeliveryController::class, 'createGallonRequest']);
+    Route::get('/admin/borrowed-gallons/{id}',  [GallonDeliveryController::class, 'getBorrowedGallons']); 
 
     Route::get('/admin/announcement', [AnnouncementController::class, 'getAllAnnouncementsForAdmin']);
     Route::put('/admin/announcement', [AnnouncementController::class, 'store']);
@@ -136,4 +138,6 @@ Route::middleware('auth.customer')->group(function () {
     Route::put('/customer/notifications/{type}/read', [NotificationController::class, 'markAsReadCustomer']);
 
     Route::get('/customer/borrow-limits', [BorrowController::class, 'getBorrowLimits']);
+
+    Route::get('download-qr/{qrCode}', [CustomerController::class, 'downloadQRCode']);
 });

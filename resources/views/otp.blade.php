@@ -38,7 +38,7 @@
         <h2>Hello,</h2>
         <p>You have requested to reset your password. Please use the following OTP code to proceed:</p>
         <p class="otp-code">{{ $otp }}</p>
-        <p>This code is valid for 1 minute. If you did not request this, please ignore this email.</p>
+        <p>This code is valid for 3 minutes. If you did not request this, please ignore this email.</p>
         <p>Thank you,<br>The Aquencher Team</p>
     </div>
 </body>

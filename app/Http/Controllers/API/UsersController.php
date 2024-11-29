@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Hash;
 use Validator;
 use App\Rules\UniqueForUser;
 use Carbon\Carbon; 
+use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\Encoding\Encoding;
 
 class UsersController extends BaseController
 {
@@ -64,6 +66,50 @@ class UsersController extends BaseController
                 'image' => $input['image'] ?? null,
                 'email_verified_at' => Carbon::now(),
             ]);
+
+            // Prepare customer data for the QR code
+            $qrContent = [
+                'ID' => $customer->id,
+                'Name' => $customer->fname . ' ' . $customer->lname,
+                'Contact' => $customer->contact_number ?? ' - ',
+                'Address' => trim(
+                    ($customer->house_number ? $customer->house_number . ', ' : ' - ') .
+                    ($customer->street ? $customer->street . ', ' : ' - ') .
+                    ($customer->barangay ? $customer->barangay . ', ' : ' - ') .
+                    ($customer->municipality_city ? $customer->municipality_city . ', ' : ' - ') .
+                    ($customer->province ? $customer->province . ', ' : ' - ') .
+                    ($customer->postal_code ? $customer->postal_code : ' - ')
+                ) ?: '-',
+            ];
+
+            $qrString = json_encode($qrContent);
+
+            // Generate the QR code
+            $result = Builder::create()
+                ->data($qrString)
+                ->encoding(new Encoding('UTF-8'))
+                ->size(300)
+                ->margin(10)
+                ->build();
+
+                
+            // Ensure the qrcodes directory exists
+            $qrCodeDirectory = storage_path('app/public/qrcodes');
+            if (!is_dir($qrCodeDirectory)) {
+                mkdir($qrCodeDirectory, 0775, true);  // Create the directory if it doesn't exist
+            }
+
+            // Handle saving the QR code
+            $timestamp = date('YmdHis');  // Create a timestamp for uniqueness
+            $qrImageName = "{$timestamp}_{$customer->id}.png";  // Naming the file
+                
+            // Save the QR code image
+            $result->saveToFile(storage_path("app/public/qrcodes/{$qrImageName}"));
+
+            // Save the path in the database
+            $customer->qr_code = $qrImageName;
+            $customer->save();
+
 
             return $this->sendResponse($customer, 'Customer created successfully.');
         }
@@ -122,6 +168,47 @@ class UsersController extends BaseController
         $customer->postal_code = $input['postal_code'] ?? $customer->postal_code;
 
         $customer->save();
+
+        $qrContent = [
+            'Name' => $customer->fname . ' ' . $customer->lname,
+            'Contact' => $customer->contact_number ?? ' - ',
+            'Address' => trim(
+                ($customer->house_number ? $customer->house_number . ', ' : ' - ') .
+                ($customer->street ? $customer->street . ', ' : ' - ') .
+                ($customer->barangay ? $customer->barangay . ', ' : ' - ') .
+                ($customer->municipality_city ? $customer->municipality_city . ', ' : ' - ') .
+                ($customer->province ? $customer->province . ', ' : ' - ') .
+                ($customer->postal_code ? $customer->postal_code : ' - ')
+            ) ?: '-',
+        ];
+
+        $qrString = json_encode($qrContent);
+
+        // Generate the new QR code
+        $result = Builder::create()
+        ->data($qrString)
+        ->encoding(new Encoding('UTF-8'))
+        ->size(300)
+        ->margin(10)
+        ->build();
+
+        // Ensure the qrcodes directory exists
+        $qrCodeDirectory = storage_path('app/public/qrcodes');
+        if (!is_dir($qrCodeDirectory)) {
+            mkdir($qrCodeDirectory, 0775, true);  // Create the directory if it doesn't exist
+        }
+
+        // Handle saving the new QR code
+        $timestamp = date('YmdHis');  // Create a timestamp for uniqueness
+        $qrImageName = "{$timestamp}_{$customer->id}.png";  // Naming the file
+
+        // Save the new QR code image
+        $result->saveToFile(storage_path("app/public/qrcodes/{$qrImageName}"));
+
+        // Save the new QR code path in the database
+        $customer->qr_code = $qrImageName;
+        $customer->save();
+
 
         return $this->sendResponse($customer, 'Customer updated successfully.');
 

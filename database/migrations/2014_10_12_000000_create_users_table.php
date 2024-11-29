@@ -28,6 +28,7 @@ return new class extends Migration
             $table->string('province');
             $table->string('postal_code');
             $table->string('image')->nullable(); 
+            $table->string('qr_code')->nullable();
             $table->boolean('is_online')->default(false); 
             $table->rememberToken();
             $table->timestamps();
