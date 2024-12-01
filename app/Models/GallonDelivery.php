@@ -28,12 +28,25 @@ class GallonDelivery extends Model
         ->leftJoin('customers', function ($join) {
             $join->on('customers.id', '=', 'refill.customer_id');
         })
+        ->leftJoin('unregistered_customers', function ($join) {
+            $join->on('unregistered_customers.id', '=', 'refill.unregistered_customer_id');
+        })
         ->select(
         DB::raw('gallon_delivery.id as gallon_delivery_id'),
         DB::raw('refill.id as refill_id'), 
         'gallon_delivery.*',  
         'refill.*',
         'customers.*', 
+        DB::raw('COALESCE(customers.id, unregistered_customers.id) as customer_id'),
+        DB::raw('COALESCE(customers.fname, unregistered_customers.fname) as fname'),
+        DB::raw('COALESCE(customers.lname, unregistered_customers.lname) as lname'),
+        DB::raw('COALESCE(customers.contact_number, unregistered_customers.contact_number) as contact_number'),
+        DB::raw('COALESCE(customers.house_number, unregistered_customers.house_number) as house_number'),
+        DB::raw('COALESCE(customers.street, unregistered_customers.street) as street'),
+        DB::raw('COALESCE(customers.barangay, unregistered_customers.barangay) as barangay'),
+        DB::raw('COALESCE(customers.municipality_city, unregistered_customers.municipality_city) as municipality_city'),
+        DB::raw('COALESCE(customers.province, unregistered_customers.province) as province'),
+        DB::raw('COALESCE(customers.postal_code, unregistered_customers.postal_code) as postal_code'),
         DB::raw('(
             SELECT CONCAT(
                "1: ", 
@@ -44,6 +57,7 @@ class GallonDelivery extends Model
             FROM refill_details 
             WHERE refill_details.refill_gallon_id = refill.id
         ) AS quantities'),
+         'gallon_delivery.created_at',
         'gallon_delivery.updated_at',
         DB::raw('gallon_delivery.status as gallon_delivery_status'),
         )

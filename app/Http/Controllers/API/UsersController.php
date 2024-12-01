@@ -5,6 +5,10 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\API\BaseController as BaseController;
 use Illuminate\Http\Request;
 use App\Models\Customer;
+use App\Models\UnRegisteredCustomer;
+use App\Models\Refill;
+use App\Models\RefillDetails;
+use App\Models\GallonDelivery;
 use Illuminate\Support\Facades\Hash;
 use Validator;
 use App\Rules\UniqueForUser;
@@ -318,6 +322,68 @@ class UsersController extends BaseController
  
          return $this->sendError('User not found.', [], 404);
      }
+
+
+    // For Unregistered Customer
+    public function storeWalkInRequest(Request $request)
+    {
+        $input = $request->all();
+
+        $validator = Validator::make($input, [
+            'fname' => 'required',
+            'lname' => 'required',
+            'contact_number' => 'required|digits:11',
+            'house_number' => 'required|string|max:255',
+            'street' => 'required|string|max:255',
+            'barangay' => 'required|string|max:255',
+            'municipality_city' => 'sometimes|string|max:255',
+            'province' => 'sometimes|string|max:255',
+            'postal_code' => 'sometimes|string|max:10',
+            'data' => 'required|array',
+            'data.*.gallon_id' => 'required',
+            'data.*.quantity' => 'required|integer|min:1',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error', $validator->errors());
+        }
+
+        $unregisteredCustomer = UnregisteredCustomer::create([
+            'fname' => $input['fname'],
+            'lname' => $input['lname'],
+            'contact_number' => $input['contact_number'],
+            'house_number' => $input['house_number'],
+            'street' => $input['street'],
+            'barangay' => $input['barangay'],
+            'municipality_city' => $input['municipality_city'] ?? 'Malolos',
+            'province' => $input['province'] ?? 'Bulacan',
+            'postal_code' => $input['postal_code'] ?? '3000'
+        ]);
+
+        
+        $refill = Refill::create([
+            'unregistered_customer_id' => $unregisteredCustomer->id,
+            'admin_id' => 1,
+            'status' => 'completed',
+        ]);
+
+        $gallon_delivery_request = GallonDelivery::create([
+            'request_type_id' => $refill->id,
+            'request_type' => 'refill',
+            'status' => 'completed',
+        ]);
+
+        foreach( $input['data'] as $refill_request_data ){
+            
+            $refill->refill_details()->create([
+                'shop_gallon_id' => $refill_request_data['gallon_id'],
+                'refill_gallon_id' => $refill->id,
+                'quantity' => $refill_request_data['quantity'],
+            ]);
+        }
+
+        return $this->sendResponse($refill, 'Walk-in request processed successfully.');
+    }
  
     
 }

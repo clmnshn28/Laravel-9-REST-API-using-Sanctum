@@ -76,6 +76,7 @@ Route::middleware('auth.admin')->group(function () {
         Route::put('customers/{customer}/deactivate', 'deactivate');
         Route::post('customers/{customer}/reactivate', 'reactivate');
     });
+    Route::post('/admin/walk-in-request', [UsersController::class, 'storeWalkInRequest']);
     Route::get('admin/products', [ProductController::class, 'index']);
     Route::put('admin/products/{product}', [ProductController::class, 'update']);
 
