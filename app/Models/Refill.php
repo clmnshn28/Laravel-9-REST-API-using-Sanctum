@@ -13,6 +13,7 @@ class Refill extends Model
 
     protected $fillable = [
         'customer_id',
+        'unregistered_customer_id',
         'admin_id',
         'status',
     ];

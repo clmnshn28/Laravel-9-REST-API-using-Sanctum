@@ -5,10 +5,16 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\API\BaseController as BaseController;
 use Illuminate\Http\Request;
 use App\Models\Customer;
+use App\Models\UnRegisteredCustomer;
+use App\Models\Refill;
+use App\Models\RefillDetails;
+use App\Models\GallonDelivery;
 use Illuminate\Support\Facades\Hash;
 use Validator;
 use App\Rules\UniqueForUser;
 use Carbon\Carbon; 
+use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\Encoding\Encoding;
 
 class UsersController extends BaseController
 {
@@ -64,6 +70,50 @@ class UsersController extends BaseController
                 'image' => $input['image'] ?? null,
                 'email_verified_at' => Carbon::now(),
             ]);
+
+            // Prepare customer data for the QR code
+            $qrContent = [
+                'ID' => $customer->id,
+                'Name' => $customer->fname . ' ' . $customer->lname,
+                'Contact' => $customer->contact_number ?? ' - ',
+                'Address' => trim(
+                    ($customer->house_number ? $customer->house_number . ', ' : ' - ') .
+                    ($customer->street ? $customer->street . ', ' : ' - ') .
+                    ($customer->barangay ? $customer->barangay . ', ' : ' - ') .
+                    ($customer->municipality_city ? $customer->municipality_city . ', ' : ' - ') .
+                    ($customer->province ? $customer->province . ', ' : ' - ') .
+                    ($customer->postal_code ? $customer->postal_code : ' - ')
+                ) ?: '-',
+            ];
+
+            $qrString = json_encode($qrContent);
+
+            // Generate the QR code
+            $result = Builder::create()
+                ->data($qrString)
+                ->encoding(new Encoding('UTF-8'))
+                ->size(300)
+                ->margin(10)
+                ->build();
+
+                
+            // Ensure the qrcodes directory exists
+            $qrCodeDirectory = storage_path('app/public/qrcodes');
+            if (!is_dir($qrCodeDirectory)) {
+                mkdir($qrCodeDirectory, 0775, true);  // Create the directory if it doesn't exist
+            }
+
+            // Handle saving the QR code
+            $timestamp = date('YmdHis');  // Create a timestamp for uniqueness
+            $qrImageName = "{$timestamp}_{$customer->id}.png";  // Naming the file
+                
+            // Save the QR code image
+            $result->saveToFile(storage_path("app/public/qrcodes/{$qrImageName}"));
+
+            // Save the path in the database
+            $customer->qr_code = $qrImageName;
+            $customer->save();
+
 
             return $this->sendResponse($customer, 'Customer created successfully.');
         }
@@ -122,6 +172,47 @@ class UsersController extends BaseController
         $customer->postal_code = $input['postal_code'] ?? $customer->postal_code;
 
         $customer->save();
+
+        $qrContent = [
+            'Name' => $customer->fname . ' ' . $customer->lname,
+            'Contact' => $customer->contact_number ?? ' - ',
+            'Address' => trim(
+                ($customer->house_number ? $customer->house_number . ', ' : ' - ') .
+                ($customer->street ? $customer->street . ', ' : ' - ') .
+                ($customer->barangay ? $customer->barangay . ', ' : ' - ') .
+                ($customer->municipality_city ? $customer->municipality_city . ', ' : ' - ') .
+                ($customer->province ? $customer->province . ', ' : ' - ') .
+                ($customer->postal_code ? $customer->postal_code : ' - ')
+            ) ?: '-',
+        ];
+
+        $qrString = json_encode($qrContent);
+
+        // Generate the new QR code
+        $result = Builder::create()
+        ->data($qrString)
+        ->encoding(new Encoding('UTF-8'))
+        ->size(300)
+        ->margin(10)
+        ->build();
+
+        // Ensure the qrcodes directory exists
+        $qrCodeDirectory = storage_path('app/public/qrcodes');
+        if (!is_dir($qrCodeDirectory)) {
+            mkdir($qrCodeDirectory, 0775, true);  // Create the directory if it doesn't exist
+        }
+
+        // Handle saving the new QR code
+        $timestamp = date('YmdHis');  // Create a timestamp for uniqueness
+        $qrImageName = "{$timestamp}_{$customer->id}.png";  // Naming the file
+
+        // Save the new QR code image
+        $result->saveToFile(storage_path("app/public/qrcodes/{$qrImageName}"));
+
+        // Save the new QR code path in the database
+        $customer->qr_code = $qrImageName;
+        $customer->save();
+
 
         return $this->sendResponse($customer, 'Customer updated successfully.');
 
@@ -231,6 +322,68 @@ class UsersController extends BaseController
  
          return $this->sendError('User not found.', [], 404);
      }
+
+
+    // For Unregistered Customer
+    public function storeWalkInRequest(Request $request)
+    {
+        $input = $request->all();
+
+        $validator = Validator::make($input, [
+            'fname' => 'required',
+            'lname' => 'required',
+            'contact_number' => 'required|digits:11',
+            'house_number' => 'required|string|max:255',
+            'street' => 'required|string|max:255',
+            'barangay' => 'required|string|max:255',
+            'municipality_city' => 'sometimes|string|max:255',
+            'province' => 'sometimes|string|max:255',
+            'postal_code' => 'sometimes|string|max:10',
+            'data' => 'required|array',
+            'data.*.gallon_id' => 'required',
+            'data.*.quantity' => 'required|integer|min:1',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error', $validator->errors());
+        }
+
+        $unregisteredCustomer = UnregisteredCustomer::create([
+            'fname' => $input['fname'],
+            'lname' => $input['lname'],
+            'contact_number' => $input['contact_number'],
+            'house_number' => $input['house_number'],
+            'street' => $input['street'],
+            'barangay' => $input['barangay'],
+            'municipality_city' => $input['municipality_city'] ?? 'Malolos',
+            'province' => $input['province'] ?? 'Bulacan',
+            'postal_code' => $input['postal_code'] ?? '3000'
+        ]);
+
+        
+        $refill = Refill::create([
+            'unregistered_customer_id' => $unregisteredCustomer->id,
+            'admin_id' => 1,
+            'status' => 'completed',
+        ]);
+
+        $gallon_delivery_request = GallonDelivery::create([
+            'request_type_id' => $refill->id,
+            'request_type' => 'refill',
+            'status' => 'completed',
+        ]);
+
+        foreach( $input['data'] as $refill_request_data ){
+            
+            $refill->refill_details()->create([
+                'shop_gallon_id' => $refill_request_data['gallon_id'],
+                'refill_gallon_id' => $refill->id,
+                'quantity' => $refill_request_data['quantity'],
+            ]);
+        }
+
+        return $this->sendResponse($refill, 'Walk-in request processed successfully.');
+    }
  
     
 }

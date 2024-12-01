@@ -6,8 +6,11 @@ use App\Http\Controllers\API\BaseController as BaseController;
 use Illuminate\Http\Request;
 use App\Models\GallonDelivery;
 use App\Models\Refill;
+use App\Models\RefillDetails;
 use App\Models\Borrow;
+use App\Models\BorrowDetails;
 use App\Models\Returned;
+use App\Models\ReturnedDetails;
 use App\Models\Product;
 use App\Models\Notification; 
 use Illuminate\Support\Facades\Auth;
@@ -283,10 +286,10 @@ class GallonDeliveryController extends BaseController
                 'admin_id' => 1,
             ])->first();
 
-            foreach( $request->data as $returned_request_data ){
-                $product = Product::find($returned_request_data['gallon_id']);
-                $product->increment('available_stock', $returned_request_data['quantity']);
-                $product->decrement('borrowed', $returned_request_data['quantity']);
+            foreach( $request->data as $request_data ){
+                $product = Product::find($request_data['gallon_id']);
+                $product->increment('available_stock', $request_data['quantity']);
+                $product->decrement('borrowed', $request_data['quantity']);
                 if ($product->available_stock > 0) {
                     $product->update(['status' => 'Available']);
                 } else {
@@ -294,9 +297,9 @@ class GallonDeliveryController extends BaseController
                 }
 
                 $borrow->borrow_details()->create([
-                    'shop_gallon_id' => $returned_request_data['gallon_id'],
+                    'shop_gallon_id' => $request_data['gallon_id'],
                     'borrowed_gallon_id' => $borrow->id,
-                    'quantity' => -$returned_request_data['quantity'],
+                    'quantity' => -$request_data['quantity'],
                 ]);
             }
         }
@@ -306,6 +309,145 @@ class GallonDeliveryController extends BaseController
         return $this->sendResponse($gallonDelivery, 'Delivery request accepted successfully.');
     }
 
+
+
+
+    public function createGallonRequest(Request $request,){
+
+        $input = $request->all();
+
+        $validator = Validator::make($input, [
+            'request_type' => 'required|in:refill,borrow,return',
+            'customer_id' => 'required|exists:customers,id',
+            'data' => 'required|array',
+            'data.*.gallon_id' => 'required',
+            'data.*.quantity' => 'required|integer|min:1',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->sendError('Validation Error', $validator->errors());
+        }
+
+        $admin = Auth::guard('admin')->user();
+        $customer_id = $input['customer_id'];
+        $request_type = $input['request_type'];
+
+        $mainRequest = null;
+
+        switch ($request_type) {
+            case 'refill':
+                $mainRequest = Refill::create([
+                    'customer_id' => $customer_id,
+                    'admin_id' => $admin->id,
+                    'status' => 'completed',
+                ]);
+                $gallonDelivery = GallonDelivery::create([
+                    'request_type_id' => $mainRequest->id,
+                    'request_type' => 'refill',
+                    'status' => 'completed',
+                ]);
+                break;
+
+            case 'borrow':
+                $mainRequest = Borrow::create([
+                    'customer_id' => $customer_id,
+                    'admin_id' => $admin->id,
+                    'status' => 'completed',
+                ]);
+                $gallonDelivery = GallonDelivery::create([
+                    'request_type_id' => $mainRequest->id,
+                    'request_type' => 'borrow',
+                    'status' => 'completed',
+                ]);
+                break;
+
+            case 'return':
+                $mainRequest = Returned::create([
+                    'customer_id' => $customer_id,
+                    'admin_id' => $admin->id,
+                    'status' => 'completed',
+                ]);
+                $gallonDelivery = GallonDelivery::create([
+                    'request_type_id' => $mainRequest->id,
+                    'request_type' => 'return',
+                    'status' => 'completed',
+                ]);
+                break;
+        }
+
+        foreach ($input['data'] as $request_data) {
+
+            switch ($request_type) {
+                case 'refill':
+                    $mainRequest->refill_details()->create([
+                        'shop_gallon_id' => $request_data['gallon_id'],
+                        'refill_gallon_id' => $mainRequest->id,
+                        'quantity' => $request_data['quantity'],
+                    ]);
+                    break;
+                
+                case 'borrow':
+                    $mainRequest->borrow_details()->create([
+                        'shop_gallon_id' => $request_data['gallon_id'],
+                        'borrowed_gallon_id' => $mainRequest->id,
+                        'quantity' => $request_data['quantity'],
+                    ]);
+
+                    $product = Product::find($request_data['gallon_id']);
+                    $product->decrement('available_stock', $request_data['quantity']);
+                    $product->increment('borrowed', $request_data['quantity']);
+                    if ($product->available_stock > 0) {
+                        $product->update(['status' => 'Available']);
+                    } else {
+                        $product->update(['status' => 'Out of Stock']);
+                    }
+                    break;
+                
+                case 'return':
+                    $mainRequest->returned_details()->create([
+                        'shop_gallon_id' => $request_data['gallon_id'],
+                        'returned_gallon_id' => $mainRequest->id,
+                        'quantity' => $request_data['quantity'],
+                    ]);
+
+                    $borrow = Borrow::where([
+                        'customer_id' => $customer_id,
+                        'admin_id' => $admin->id,
+                    ])->first();
+        
+                   
+                    $product = Product::find($request_data['gallon_id']);
+                    $product->increment('available_stock', $request_data['quantity']);
+                    $product->decrement('borrowed', $request_data['quantity']);
+                    if ($product->available_stock > 0) {
+                        $product->update(['status' => 'Available']);
+                    } else {
+                        $product->update(['status' => 'Out of Stock']);
+                    }
+    
+                    $borrow->borrow_details()->create([
+                        'shop_gallon_id' => $request_data['gallon_id'],
+                        'borrowed_gallon_id' => $borrow->id,
+                        'quantity' => -$request_data['quantity'],
+                    ]);
+             
+                    break;
+            }
+        }
+        
+        return $this->sendResponse($mainRequest, ucfirst($request_type) . ' request processed successfully');
+    }
+
+
+    public function getBorrowedGallons(Request $request, $id) {
+    
+        $borrowedGallons = Borrow::where('customer_id', $id)
+            ->where('status', '=', 'completed') 
+            ->with('borrow_details')
+            ->get();
+    
+        return $this->sendResponse($borrowedGallons, 'Borrowed gallons retrieved successfully.');
+    }
 
 
 }

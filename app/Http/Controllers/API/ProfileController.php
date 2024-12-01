@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Validator;
 use App\Rules\UniqueForUser;
+use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\Encoding\Encoding;
 
 class ProfileController extends BaseController
 {
@@ -55,6 +57,46 @@ class ProfileController extends BaseController
         $user->province = $request->province ?? $user->province;
         $user->postal_code = $request->postal_code ?? $user->postal_code;
 
+        $user->save();
+
+        // Prepare the QR content
+        $qrContent = [
+            'ID' => $user->id,
+            'Name' => $user->fname . ' ' . $user->lname,
+            'Contact' => $user->contact_number ?? ' - ',
+            'Address' => trim(
+                ($user->house_number ? $user->house_number . ', ' : ' - ') .
+                ($user->street ? $user->street . ', ' : ' - ') .
+                ($user->barangay ? $user->barangay . ', ' : ' - ') .
+                ($user->municipality_city ? $user->municipality_city . ', ' : ' - ') .
+                ($user->province ? $user->province . ', ' : ' - ') .
+                ($user->postal_code ? $user->postal_code : ' - ')
+            ) ?: '-',
+        ];
+
+        $qrString = json_encode($qrContent);
+
+        // Generate QR code
+        $result = Builder::create()
+            ->data($qrString)
+            ->encoding(new Encoding('UTF-8'))
+            ->size(300)
+            ->margin(10)
+            ->build();
+
+        // Save the QR code
+        $qrCodeDirectory = storage_path('app/public/qrcodes');
+        if (!is_dir($qrCodeDirectory)) {
+            mkdir($qrCodeDirectory, 0775, true);  // Create the directory if it doesn't exist
+        }
+
+        $timestamp = date('YmdHis');  // Create a timestamp for uniqueness
+        $qrImageName = "{$timestamp}_{$user->id}.png";  // Naming the file
+
+        $result->saveToFile(storage_path("app/public/qrcodes/{$qrImageName}"));
+
+        // Save QR code path in the database
+        $user->qr_code = $qrImageName;
         $user->save();
 
         return $this->sendResponse($user, 'User updated successfully.');

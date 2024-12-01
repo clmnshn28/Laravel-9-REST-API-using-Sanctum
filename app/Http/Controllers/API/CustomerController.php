@@ -9,6 +9,8 @@ use App\Models\User;
 use Validator;
 use Illuminate\Support\Facades\Auth;
 use App\Rules\UniqueForUser;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\Response;
 
 class CustomerController extends BaseController
 {
@@ -70,7 +72,25 @@ class CustomerController extends BaseController
         return $this->sendResponse( $sorted, ' All Transactions created successfully.');
     }
 
-    
+     /**
+     * Download QR code for the customer.
+     *
+     * @param  string  $qrCode
+     * @return \Illuminate\Http\Response
+     */
+    public function downloadQRCode($qrCode)
+    {
+        // Define the path to the QR code image in the storage folder
+        $filePath = storage_path("app/public/qrcodes/{$qrCode}");
+
+        // Check if the file exists
+        if (!file_exists($filePath)) {
+            return $this->sendError('File not found.', [], 404);
+        }
+
+        // Return the file as a download
+        return response()->download($filePath);
+    }
 
 
 }

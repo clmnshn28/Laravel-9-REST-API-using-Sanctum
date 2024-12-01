@@ -15,7 +15,8 @@ return new class extends Migration
     {
         Schema::create('refill', function (Blueprint $table) {
             $table->id();
-            $table->integer('customer_id');
+            $table->integer('customer_id')->nullable();
+            $table->integer('unregistered_customer_id')->nullable();
             $table->integer('admin_id');
             $table->string('status');
             $table->timestamps();
